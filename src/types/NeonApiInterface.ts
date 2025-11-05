@@ -25,7 +25,6 @@ export type ParticipationSchemaType = "none" | "datetime" | "note" | "mixed";
 
 export interface ParticipationSchema {
   type: ParticipationSchemaType;
-  required?: boolean;
   datetimeLabel?: string;
   datetimeRequired?: boolean;
   noteLabel?: string;
@@ -76,6 +75,7 @@ export interface WishFormData {
   postNoteLabel?: string;
   postNoteRequired?: boolean;
 }
+export type schemaType = "participation" | "post";
 
 export type loginAuthRequest = {
   userId: string;
@@ -129,3 +129,15 @@ export type insertUserInfoResponse =
     }
   | { error: string; status: number };
 export type insertUserInfoApiResponse = Response<insertUserInfoResponse>;
+
+export type insertWishRequest = accessTokenAuthRequest &
+  Omit<Wish, "id" | "participants" | "withdrawn" | "createdAt">;
+
+export type insertWishApiRequest = Request<insertWishRequest>;
+export type insertWishResponse =
+  | {
+      result: { id: string };
+      status: number;
+    }
+  | { error: string; status: number };
+export type insertWishApiResponse = Response<insertWishResponse>;
