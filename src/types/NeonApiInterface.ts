@@ -141,3 +141,12 @@ export type insertWishResponse =
     }
   | { error: string; status: number };
 export type insertWishApiResponse = Response<insertWishResponse>;
+export type getWishByIdRequest = accessTokenAuthRequest & Pick<Wish, "id">;
+export type getWishByIdApiRequest = Request<getWishByIdRequest>;
+export type getWishByIdResponse =
+  | {
+      result: { wish: Wish };
+      status: number;
+    }
+  | { error: string; status: number };
+export type getWishByIdApiResponse = Response<getWishByIdResponse>;
