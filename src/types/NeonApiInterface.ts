@@ -17,10 +17,10 @@ export interface Group {
 export interface Participant {
   userId: string;
   joinedAt: string;
-  participationAnswers?: { datetime: string; note: string };
-  postAnswers?: { datetime: string; note: string };
+  participationAnswers?: answer;
+  postAnswers?: answer;
 }
-
+export type answer = { datetime?: string; note?: string };
 export type ParticipationSchemaType = "none" | "datetime" | "note" | "mixed";
 
 export interface ParticipationSchema {
@@ -150,3 +150,16 @@ export type getWishByIdResponse =
     }
   | { error: string; status: number };
 export type getWishByIdApiResponse = Response<getWishByIdResponse>;
+
+export type insertAnswerRequest = accessTokenAuthRequest & {
+  id: string;
+} & Omit<Participant, "userId" | "joinedAt">;
+
+export type insertAnswerApiRequest = Request<insertAnswerRequest>;
+export type insertAnswerResponse =
+  | {
+      result: string;
+      status: number;
+    }
+  | { error: string; status: number };
+export type insertAnswerApiResponse = Response<insertAnswerResponse>;

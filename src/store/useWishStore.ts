@@ -39,6 +39,7 @@ export const useWishStore = create<WishStore>()(
         return newWish.id;
       },
       editWish: (id, wishUpdate) => {
+        console.log(JSON.stringify(wishUpdate));
         set((state) => ({
           wishes: state.wishes.map((w) =>
             w.id === id ? { ...w, ...wishUpdate } : w

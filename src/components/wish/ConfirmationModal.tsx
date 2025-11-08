@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-import { ParticipationSchema } from "../../types/NeonApiInterface";
+import { answer, ParticipationSchema } from "../../types/NeonApiInterface";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Record<string, string>) => void;
+  onSubmit: (data: answer) => void;
   schema: ParticipationSchema;
   title: string;
   submitButtonText?: string;
@@ -19,7 +19,7 @@ const ConfirmationModal = ({
   title,
   submitButtonText = "確定",
 }: ConfirmationModalProps) => {
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<answer>({});
 
   if (!isOpen || schema.type === "none") return null;
 
