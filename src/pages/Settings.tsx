@@ -1,5 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { Users, UserPlus, FileText, FolderPlus, LogOut } from "lucide-react";
+import {
+  Users,
+  UserPlus,
+  FileText,
+  FolderPlus,
+  LogOut,
+  Calendar,
+} from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useGroupStore } from "../store/useGroupStore";
 import { useAuth } from "../store/useAuth";
@@ -96,6 +103,23 @@ const Settings = () => {
                 </div>
               </div>
             </button>
+            {currentGroup && (
+              <button
+                onClick={() => navigate("/user-participation")}
+                className="w-full px-6 py-4 flex items-center space-x-4 hover:bg-gray-50 transition-colors text-left">
+                <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Calendar className="text-purple-600" size={24} />
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-gray-800">
+                    ユーザーごとの参加状況
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    メンバーの参加予定を確認
+                  </div>
+                </div>
+              </button>
+            )}
           </div>
         </div>
 

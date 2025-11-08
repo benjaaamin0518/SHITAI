@@ -22,6 +22,7 @@ import { useAuth, auth as accessTokenAuth } from "./store/useAuth";
 import { useEffect } from "react";
 import { Group } from "lucide-react";
 import { useAppStore } from "./store/useAppStore";
+import UserParticipation from "./pages/UserParticipation";
 
 function App() {
   const { auth } = useAuth();
@@ -140,6 +141,16 @@ function App() {
               element={
                 useAuth().isAuthenticated ? (
                   <InviteUser />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/user-participation"
+              element={
+                useAuth().isAuthenticated ? (
+                  <UserParticipation />
                 ) : (
                   <Navigate to="/login" replace />
                 )
