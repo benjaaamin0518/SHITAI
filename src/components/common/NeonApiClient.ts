@@ -1,12 +1,32 @@
 import {
   accessTokenAuthRequest,
   accessTokenAuthResponse,
+  getGroupsRequest,
+  getGroupsResponse,
+  getWishByIdRequest,
+  getWishByIdResponse,
+  getWishesRequest,
+  getWishesResponse,
+  Group,
+  insertAnswerRequest,
+  insertAnswerResponse,
+  insertGroupRequest,
+  insertGroupResponse,
   insertUserInfoRequest,
   insertUserInfoResponse,
+  insertWishRequest,
+  insertWishResponse,
+  invitationGroupRequest,
+  invitationGroupResponse,
+  joinWishRequest,
+  joinWishResponse,
   loginAuthRequest,
   loginAuthResponse,
   refreshTokenAuthRequest,
   refreshTokenAuthResponse,
+  updateWishRequest,
+  updateWishResponse,
+  Wish,
 } from "../../types/NeonApiInterface";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 class NeonClientApi {
@@ -187,6 +207,384 @@ class NeonClientApi {
       console.error(e);
     } finally {
       return statusCode;
+    }
+  }
+  public async insertWish(param: insertWishRequest) {
+    let statusCode = 200;
+    let message = "";
+    let id = null;
+    try {
+      let isExec = true;
+      while (isExec) {
+        let options: AxiosRequestConfig<insertWishRequest> = {
+          url: `${this._backendApiUrl}/api/v1/post/insertWish`,
+          method: "POST",
+          data: param,
+        };
+        await axios<any, AxiosResponse<insertWishResponse>, insertWishRequest>(
+          options
+        )
+          .then((res) => {
+            statusCode = res.data.status;
+            if ("result" in res.data) {
+              const { id: resId } = res.data.result;
+              id = resId;
+              isExec = false;
+            }
+          })
+          .catch(async (error) => {
+            statusCode = error.response.data.status;
+            message = error.response.data.error;
+            console.log(error);
+            const obj = await this.wrapRefreshTokenAuth(message, statusCode);
+            statusCode = obj.statusCode;
+            isExec = obj.isExec;
+            if (isExec) {
+              param.userInfo.accessToken = obj.accessToken;
+              options.data = param;
+            }
+          });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return { statusCode, id };
+    }
+  }
+  public async getWishById(param: getWishByIdRequest) {
+    let statusCode = 200;
+    let message = "";
+    let wish = {};
+    try {
+      let isExec = true;
+      while (isExec) {
+        let options: AxiosRequestConfig<getWishesRequest> = {
+          url: `${this._backendApiUrl}/api/v1/get/wishById`,
+          method: "POST",
+          data: param,
+        };
+        await axios<
+          any,
+          AxiosResponse<getWishByIdResponse>,
+          getWishByIdRequest
+        >(options)
+          .then((res) => {
+            statusCode = res.data.status;
+            if ("result" in res.data) {
+              const { wish: resWish } = res.data.result;
+              wish = resWish;
+              isExec = false;
+            }
+          })
+          .catch(async (error) => {
+            statusCode = error.response.data.status;
+            message = error.response.data.error;
+            console.log(error);
+            const obj = await this.wrapRefreshTokenAuth(message, statusCode);
+            statusCode = obj.statusCode;
+            isExec = obj.isExec;
+            if (isExec) {
+              param.userInfo.accessToken = obj.accessToken;
+              options.data = param;
+            }
+          });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return { statusCode, wish };
+    }
+  }
+  public async insertAnswer(param: insertAnswerRequest) {
+    let statusCode = 200;
+    let message = "";
+    try {
+      let isExec = true;
+      while (isExec) {
+        let options: AxiosRequestConfig<insertAnswerRequest> = {
+          url: `${this._backendApiUrl}/api/v1/post/insertAnswer`,
+          method: "POST",
+          data: param,
+        };
+        await axios<
+          any,
+          AxiosResponse<insertAnswerResponse>,
+          insertAnswerRequest
+        >(options)
+          .then((res) => {
+            statusCode = res.data.status;
+            if ("result" in res.data) {
+              const str = res.data.result;
+              isExec = false;
+            }
+          })
+          .catch(async (error) => {
+            statusCode = error.response.data.status;
+            message = error.response.data.error;
+            console.log(error);
+            const obj = await this.wrapRefreshTokenAuth(message, statusCode);
+            statusCode = obj.statusCode;
+            isExec = obj.isExec;
+            if (isExec) {
+              param.userInfo.accessToken = obj.accessToken;
+              options.data = param;
+            }
+          });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return { statusCode };
+    }
+  }
+  public async updateWish(param: updateWishRequest) {
+    let statusCode = 200;
+    let message = "";
+    try {
+      let isExec = true;
+      while (isExec) {
+        let options: AxiosRequestConfig<updateWishRequest> = {
+          url: `${this._backendApiUrl}/api/v1/post/updateWish`,
+          method: "POST",
+          data: param,
+        };
+        await axios<any, AxiosResponse<updateWishResponse>, updateWishRequest>(
+          options
+        )
+          .then((res) => {
+            statusCode = res.data.status;
+            if ("result" in res.data) {
+              const str = res.data.result;
+              isExec = false;
+            }
+          })
+          .catch(async (error) => {
+            statusCode = error.response.data.status;
+            message = error.response.data.error;
+            console.log(error);
+            const obj = await this.wrapRefreshTokenAuth(message, statusCode);
+            statusCode = obj.statusCode;
+            isExec = obj.isExec;
+            if (isExec) {
+              param.userInfo.accessToken = obj.accessToken;
+              options.data = param;
+            }
+          });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return { statusCode };
+    }
+  }
+  public async getWishes(param: getWishesRequest) {
+    let statusCode = 200;
+    let message = "";
+    let wishes: Wish[] = [];
+    try {
+      let isExec = true;
+      while (isExec) {
+        let options: AxiosRequestConfig<getWishesRequest> = {
+          url: `${this._backendApiUrl}/api/v1/get/wishes`,
+          method: "POST",
+          data: param,
+        };
+        await axios<any, AxiosResponse<getWishesResponse>, getWishesRequest>(
+          options
+        )
+          .then((res) => {
+            statusCode = res.data.status;
+            if ("result" in res.data) {
+              const { wishes: resWishes } = res.data.result;
+              wishes = resWishes;
+              isExec = false;
+            }
+          })
+          .catch(async (error) => {
+            statusCode = error.response.data.status;
+            message = error.response.data.error;
+            console.log(error);
+            const obj = await this.wrapRefreshTokenAuth(message, statusCode);
+            statusCode = obj.statusCode;
+            isExec = obj.isExec;
+            if (isExec) {
+              param.userInfo.accessToken = obj.accessToken;
+              options.data = param;
+            }
+          });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return { statusCode, wishes };
+    }
+  }
+  public async getGroups(param: getGroupsRequest) {
+    let statusCode = 200;
+    let message = "";
+    let groups: Group[] = [];
+    try {
+      let isExec = true;
+      while (isExec) {
+        let options: AxiosRequestConfig<getGroupsRequest> = {
+          url: `${this._backendApiUrl}/api/v1/get/groups`,
+          method: "POST",
+          data: param,
+        };
+        await axios<any, AxiosResponse<getGroupsResponse>, getGroupsRequest>(
+          options
+        )
+          .then((res) => {
+            statusCode = res.data.status;
+            if ("result" in res.data) {
+              const { groups: resGroups } = res.data.result;
+              groups = resGroups;
+              isExec = false;
+            }
+          })
+          .catch(async (error) => {
+            statusCode = error.response.data.status;
+            message = error.response.data.error;
+            console.log(error);
+            const obj = await this.wrapRefreshTokenAuth(message, statusCode);
+            statusCode = obj.statusCode;
+            isExec = obj.isExec;
+            if (isExec) {
+              param.userInfo.accessToken = obj.accessToken;
+              options.data = param;
+            }
+          });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return { statusCode, groups };
+    }
+  }
+  public async insertGroup(param: insertGroupRequest) {
+    let statusCode = 200;
+    let message = "";
+    let id = null;
+    try {
+      let isExec = true;
+      while (isExec) {
+        let options: AxiosRequestConfig<insertGroupRequest> = {
+          url: `${this._backendApiUrl}/api/v1/post/insertGroup`,
+          method: "POST",
+          data: param,
+        };
+        await axios<
+          any,
+          AxiosResponse<insertGroupResponse>,
+          insertGroupRequest
+        >(options)
+          .then((res) => {
+            statusCode = res.data.status;
+            if ("result" in res.data) {
+              const { id: resId } = res.data.result;
+              id = resId;
+              isExec = false;
+            }
+          })
+          .catch(async (error) => {
+            statusCode = error.response.data.status;
+            message = error.response.data.error;
+            console.log(error);
+            const obj = await this.wrapRefreshTokenAuth(message, statusCode);
+            statusCode = obj.statusCode;
+            isExec = obj.isExec;
+            if (isExec) {
+              param.userInfo.accessToken = obj.accessToken;
+              options.data = param;
+            }
+          });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return { statusCode, id };
+    }
+  }
+  public async invitationGroup(param: invitationGroupRequest) {
+    let statusCode = 200;
+    let message = "";
+    try {
+      let isExec = true;
+      while (isExec) {
+        let options: AxiosRequestConfig<invitationGroupRequest> = {
+          url: `${this._backendApiUrl}/api/v1/post/invitationGroup`,
+          method: "POST",
+          data: param,
+        };
+        await axios<
+          any,
+          AxiosResponse<invitationGroupResponse>,
+          invitationGroupRequest
+        >(options)
+          .then((res) => {
+            statusCode = res.data.status;
+            if ("result" in res.data) {
+              const str = res.data.result;
+              isExec = false;
+            }
+          })
+          .catch(async (error) => {
+            statusCode = error.response.data.status;
+            message = error.response.data.error;
+            console.log(error);
+            const obj = await this.wrapRefreshTokenAuth(message, statusCode);
+            statusCode = obj.statusCode;
+            isExec = obj.isExec;
+            if (isExec) {
+              param.userInfo.accessToken = obj.accessToken;
+              options.data = param;
+            }
+          });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return { statusCode };
+    }
+  }
+  public async joinWish(param: joinWishRequest) {
+    let statusCode = 200;
+    let message = "";
+    try {
+      let isExec = true;
+      while (isExec) {
+        let options: AxiosRequestConfig<joinWishRequest> = {
+          url: `${this._backendApiUrl}/api/v1/post/joinWish`,
+          method: "POST",
+          data: param,
+        };
+        await axios<any, AxiosResponse<joinWishResponse>, joinWishRequest>(
+          options
+        )
+          .then((res) => {
+            statusCode = res.data.status;
+            if ("result" in res.data) {
+              const str = res.data.result;
+              isExec = false;
+            }
+          })
+          .catch(async (error) => {
+            statusCode = error.response.data.status;
+            message = error.response.data.error;
+            console.log(error);
+            const obj = await this.wrapRefreshTokenAuth(message, statusCode);
+            statusCode = obj.statusCode;
+            isExec = obj.isExec;
+            if (isExec) {
+              param.userInfo.accessToken = obj.accessToken;
+              options.data = param;
+            }
+          });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return { statusCode };
     }
   }
 }

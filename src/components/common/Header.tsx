@@ -1,7 +1,7 @@
-import { User } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useAppStore } from '../../store/useAppStore';
-import { useGroupStore } from '../../store/useGroupStore';
+import { User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAppStore } from "../../store/useAppStore";
+import { useGroupStore } from "../../store/useGroupStore";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ const Header = () => {
   const handleGroupChange = (groupId: string) => {
     selectGroup(groupId || null);
     if (groupId) {
-      navigate('/');
+      navigate("/");
     }
   };
 
@@ -26,10 +26,9 @@ const Header = () => {
 
             {groups.length > 0 && (
               <select
-                value={currentGroupId || ''}
+                value={currentGroupId || ""}
                 onChange={(e) => handleGroupChange(e.target.value)}
-                className="bg-white text-gray-800 px-4 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-red-300"
-              >
+                className="bg-white text-gray-800 px-4 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-red-300">
                 <option value="">グループを選択</option>
                 {groups.map((group) => (
                   <option key={group.id} value={group.id}>
@@ -43,7 +42,9 @@ const Header = () => {
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2">
               <User size={20} />
-              <span className="font-semibold">{currentUser?.name || 'Guest'}</span>
+              <span className="font-semibold">
+                {currentUser?.name || "Guest"}
+              </span>
             </div>
           </div>
         </div>

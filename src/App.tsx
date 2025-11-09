@@ -23,10 +23,12 @@ import { useEffect } from "react";
 import { Group } from "lucide-react";
 import { useAppStore } from "./store/useAppStore";
 import UserParticipation from "./pages/UserParticipation";
+import { getGroups, useGroupStore } from "./store/useGroupStore";
 
 function App() {
   const { auth } = useAuth();
   const setUser = useAppStore((state) => state.setUser);
+  const setGroups = useGroupStore((state) => state.setGroups);
   useEffect(() => {
     console.log(localStorage.getItem("shitai-accessToken"));
     (async () => {
@@ -37,6 +39,7 @@ function App() {
         name,
         email,
       });
+      setGroups(await getGroups());
     })();
   }, []);
   return (

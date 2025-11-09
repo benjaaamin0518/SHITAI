@@ -4,14 +4,12 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  avatarUrl?: string;
 }
 
 export interface Group {
   id: string;
   name: string;
   members: User[];
-  createdAt: string;
 }
 
 export interface Participant {
@@ -37,6 +35,7 @@ export interface Wish {
   creatorId: string;
   category: string;
   imageData?: string;
+  implementationDatetime?: string;
   title: string;
   displayDate?: string;
   displayText?: string;
@@ -59,6 +58,7 @@ export interface WishFormData {
   title: string;
   displayDate?: string;
   displayText?: string;
+  implementationDatetime?: string;
   notes?: string;
   deadline?: string;
   minParticipants: number;
@@ -163,3 +163,75 @@ export type insertAnswerResponse =
     }
   | { error: string; status: number };
 export type insertAnswerApiResponse = Response<insertAnswerResponse>;
+export type updateWishRequest = accessTokenAuthRequest &
+  Omit<
+    Wish,
+    | "participationConfirmSchema"
+    | "postConfirmSchema"
+    | "participants"
+    | "withdrawn"
+    | "createdAt"
+  >;
+
+export type updateWishApiRequest = Request<updateWishRequest>;
+export type updateWishResponse =
+  | {
+      result: string;
+      status: number;
+    }
+  | { error: string; status: number };
+export type updateWishApiResponse = Response<updateWishResponse>;
+export type getWishesRequest = accessTokenAuthRequest & Pick<Group, "id">;
+export type getWishesApiRequest = Request<getWishesRequest>;
+export type getWishesResponse =
+  | {
+      result: { wishes: Wish[] };
+      status: number;
+    }
+  | { error: string; status: number };
+export type getWishesApiResponse = Response<getWishesResponse>;
+
+export type getGroupsRequest = accessTokenAuthRequest;
+export type getGroupsApiRequest = Request<getGroupsRequest>;
+export type getGroupsResponse =
+  | {
+      result: { groups: Group[] };
+      status: number;
+    }
+  | { error: string; status: number };
+export type getGroupsApiResponse = Response<getGroupsResponse>;
+
+export type insertGroupRequest = accessTokenAuthRequest & Pick<Group, "name">;
+export type insertGroupApiRequest = Request<insertGroupRequest>;
+export type insertGroupResponse =
+  | {
+      result: { id: string };
+      status: number;
+    }
+  | { error: string; status: number };
+export type insertGroupApiResponse = Response<insertGroupResponse>;
+
+export type invitationGroupRequest = accessTokenAuthRequest & {
+  invitationUserId: string;
+  groupId: string;
+};
+export type invitationGroupApiRequest = Request<invitationGroupRequest>;
+export type invitationGroupResponse =
+  | {
+      result: string;
+      status: number;
+    }
+  | { error: string; status: number };
+export type invitationGroupApiResponse = Response<invitationGroupResponse>;
+
+export type joinWishRequest = accessTokenAuthRequest & {
+  wishId: string;
+};
+export type joinWishApiRequest = Request<joinWishRequest>;
+export type joinWishResponse =
+  | {
+      result: string;
+      status: number;
+    }
+  | { error: string; status: number };
+export type joinWishApiResponse = Response<joinWishResponse>;
