@@ -9,22 +9,22 @@ export const formatDate = (
   date: string | Date,
   format = "YYYY/MM/DD"
 ): string => {
-  return dayjs(date).format(format);
+  return dayjs(date).tz().format(format);
 };
 
 export const formatDisplayDate = (
   date: string | Date,
   format = "YYYY/MM/DD HH:mm"
 ): string => {
-  return dayjs(date).format(format);
+  return dayjs(date).tz().format(format);
 };
 
 export const formatDateTime = (date: string | Date): string => {
-  return dayjs(date).format("YYYY-MM-DDTHH:mm");
+  return dayjs(date).tz().format("YYYY-MM-DDTHH:mm");
 };
 
 export const getRelativeTime = (date: string | Date): string => {
-  return dayjs(date).fromNow();
+  return dayjs(date).tz().fromNow();
 };
 
 export const getTimeRemaining = (
@@ -79,13 +79,13 @@ export const getTimeRemaining = (
 };
 
 export const isDateInPast = (date: string | Date): boolean => {
-  return dayjs(date).isBefore(dayjs());
+  return dayjs(date).tz().isBefore(dayjs());
 };
 
 export const addDays = (date: string | Date, days: number): string => {
-  return dayjs(date).add(days, "day").toISOString();
+  return dayjs(date).tz().add(days, "day").toISOString();
 };
 
 export const addHours = (date: string | Date, hours: number): string => {
-  return dayjs(date).add(hours, "hour").toISOString();
+  return dayjs(date).tz().add(hours, "hour").toISOString();
 };
