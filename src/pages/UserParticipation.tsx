@@ -166,7 +166,7 @@ const UserParticipation = () => {
                       className="scroll-mt-6">
                       <div className="bg-red-50 px-4 py-2 rounded-t-lg border-l-4 border-red-500">
                         <h4 className="font-bold text-red-800">
-                          {dayjs(date).utc().format("YYYY年M月D日 (ddd)")}
+                          {dayjs(date).format("YYYY年M月D日 (ddd)")}
                         </h4>
                       </div>
                       <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg divide-y">
