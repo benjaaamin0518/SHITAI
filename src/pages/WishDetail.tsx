@@ -304,7 +304,7 @@ const WishDetail = () => {
                               {participant.participationAnswers.datetime ==
                               "1900/1/1 0:00"
                                 ? "未回答"
-                                : participant.participationAnswers.datetime}
+                                : formatDisplayDate(participant.participationAnswers.datetime)}
                             </div>
                           )}
                           {participant.participationAnswers?.note && (
@@ -334,7 +334,7 @@ const WishDetail = () => {
                               {participant.postAnswers.datetime ==
                               "1900/1/1 0:00"
                                 ? "未回答"
-                                : participant.postAnswers.datetime}
+                                : formatDisplayDate(participant.postAnswers.datetime)}
                             </div>
                           )}
                           {participant.postAnswers?.note && (
