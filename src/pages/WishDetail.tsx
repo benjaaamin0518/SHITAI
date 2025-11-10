@@ -8,16 +8,19 @@ import {
   FileText,
 } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
-import { useWishStore } from "../store/useWishStore";
+import { getWishes, useWishStore } from "../store/useWishStore";
 import { useGroupStore } from "../store/useGroupStore";
 import ConfirmationModal from "../components/wish/ConfirmationModal";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { linkifyText } from "../utils/linkify";
+import Loading from "../components/common/Loading";
+import { formatDisplayDate } from "../utils/date";
 
 const WishDetail = () => {
   const { id } = useParams<{ id: string }>();
   //const [wish,setWish] = useState(getWishById(id));
+  const selectGroup = useAppStore((state) => state.selectGroup);
   const navigate = useNavigate();
   const currentUser = useAppStore((state) => state.currentUser);
   const getWishById = useWishStore((state) => state.getWishById);
@@ -28,18 +31,32 @@ const WishDetail = () => {
   const updateParticipantConfirmation = useWishStore(
     (state) => state.updateParticipantConfirmation
   );
+  const [isLoading, setIsLoading] = useState(true);
   const getGroupById = useGroupStore((state) => state.getGroupById);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [showParticipationConfirm, setShowParticipationConfirm] =
     useState(false);
   const [showPostConfirm, setShowPostConfirm] = useState(false);
+  const setWishes = useWishStore((state) => state.setWishes);
 
   if (!id) {
     return null;
   }
   const [wish, setWish] = useState(getWishById(id));
-
-  if (!wish) {
+  useEffect(() => {
+    (async () => {
+      setWishes(await getWishes());
+      setWish(getWishById(id));
+      setIsLoading(false);
+    })();
+  }, []);
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 pb-20">
+        <Loading message="したいことを読み込んでいます..." />
+      </div>
+    );
+  } else if (!wish) {
     return (
       <div className="container mx-auto px-4 py-8 pb-20">
         <div className="text-center py-12 text-gray-500">
@@ -48,19 +65,21 @@ const WishDetail = () => {
       </div>
     );
   }
-
+  if (wish.groupId) {
+    selectGroup(wish.groupId);
+  }
   const group = getGroupById(wish.groupId);
-  const creator = group?.members.find((m) => m.id === wish.creatorId);
-  const isCreator = currentUser?.id === wish.creatorId;
+  const creator = group?.members.find((m) => m.id == wish.creatorId);
+  const isCreator = currentUser?.id == wish.creatorId;
   const isParticipant = wish.participants.some(
-    (p) => p.userId === currentUser?.id
+    (p) => p.userId == currentUser?.id
   );
   const isConfirmed = isWishConfirmed(wish);
   const isMaxParticipantsReached =
     wish.maxParticipants && wish.participants.length >= wish.maxParticipants;
   const canJoin = currentUser ? canUserJoin(wish, currentUser.id) : false;
   let currentParticipant = wish.participants.find(
-    (p) => p.userId === currentUser?.id
+    (p) => p.userId == currentUser?.id
   );
   const hasPostAnswers =
     currentParticipant?.postAnswers &&
@@ -73,17 +92,18 @@ const WishDetail = () => {
     !hasPostAnswers &&
     !wish.withdrawn;
 
-  const handleJoinClick = () => {
+  const handleJoinClick = async () => {
     if (wish.participationConfirmSchema.type !== "none") {
       setShowParticipationConfirm(true);
     } else {
-      handleJoin({ datetime: "", note: "" });
+      await handleJoin({ datetime: "", note: "" });
     }
   };
 
-  const handleJoin = (confirmData: Record<string, string>) => {
+  const handleJoin = async (confirmData: Record<string, string>) => {
+    setIsLoading(true);
     if (!currentUser) return;
-    joinWish(id, {
+    await joinWish(id, {
       userId: currentUser.id,
       joinedAt: new Date().toISOString(),
       participationAnswers: {
@@ -92,17 +112,25 @@ const WishDetail = () => {
       },
     });
     setWish(getWishById(id));
+    setIsLoading(false);
   };
 
-  const handlePostConfirm = (data: Record<string, string>) => {
+  const handlePostConfirm = async (data: Record<string, string>) => {
+    setIsLoading(true);
+
     if (!currentUser) return;
-    updateParticipantConfirmation(id, currentUser.id, data);
+    await updateParticipantConfirmation(id, currentUser.id, data);
     setWish(getWishById(id));
+    setIsLoading(false);
   };
 
-  const handleWithdraw = () => {
-    withdrawWish(id);
+  const handleWithdraw = async () => {
+    setIsLoading(true);
+
+    await withdrawWish(id);
     setShowWithdrawDialog(false);
+    setIsLoading(false);
+
     navigate("/");
   };
 
@@ -162,12 +190,18 @@ const WishDetail = () => {
             )}
           </div>
 
-          {wish.displayDate && (
+          {(wish.implementationDatetime && (
             <div className="flex items-center text-gray-600 mb-2">
               <Calendar size={18} className="mr-2" />
-              <span>{wish.displayDate}</span>
+              <span>{formatDisplayDate(wish.implementationDatetime)}</span>
             </div>
-          )}
+          )) ||
+            (wish.displayDate && (
+              <div className="flex items-center text-gray-600 mb-2">
+                <Calendar size={18} className="mr-2" />
+                <span>{wish.displayDate}</span>
+              </div>
+            ))}
 
           {wish.displayText && (
             <p className="text-gray-700 text-lg mb-4">{wish.displayText}</p>
@@ -216,7 +250,7 @@ const WishDetail = () => {
                 <span>参加状況</span>
               </h3>
               <div className="text-3xl font-bold text-blue-600">
-                {wish.participants.length} / {wish.minParticipants}
+                {wish.participants.length} / {wish.maxParticipants}
               </div>
             </div>
 
@@ -225,7 +259,7 @@ const WishDetail = () => {
                 {wish.participants.map((participant, index) => {
                   console.log(participant);
                   const member = group?.members.find(
-                    (m) => m.id === participant.userId
+                    (m) => m.id == participant.userId
                   );
                   const hasParticipationAnswers =
                     participant.participationAnswers &&
@@ -267,7 +301,10 @@ const WishDetail = () => {
                                   .datetimeLabel || "日時"}
                                 :
                               </span>{" "}
-                              {participant.participationAnswers.datetime}
+                              {participant.participationAnswers.datetime ==
+                              "1900/1/1 0:00"
+                                ? "未回答"
+                                : participant.participationAnswers.datetime}
                             </div>
                           )}
                           {participant.participationAnswers?.note && (
@@ -294,7 +331,10 @@ const WishDetail = () => {
                                 {wish.postConfirmSchema.datetimeLabel || "日時"}
                                 :
                               </span>{" "}
-                              {participant.postAnswers.datetime}
+                              {participant.postAnswers.datetime ==
+                              "1900/1/1 0:00"
+                                ? "未回答"
+                                : participant.postAnswers.datetime}
                             </div>
                           )}
                           {participant.postAnswers?.note && (

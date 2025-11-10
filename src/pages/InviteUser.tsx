@@ -1,8 +1,10 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useGroupStore } from '../store/useGroupStore';
-import { inviteFormSchema } from '../utils/validators';
+import { useParams, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useGroupStore } from "../store/useGroupStore";
+import { inviteFormSchema } from "../utils/validators";
+import Loading from "../components/common/Loading";
+import { useState } from "react";
 
 interface InviteFormData {
   email: string;
@@ -13,7 +15,7 @@ const InviteUser = () => {
   const navigate = useNavigate();
   const inviteUser = useGroupStore((state) => state.inviteUser);
   const getGroupById = useGroupStore((state) => state.getGroupById);
-
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -25,6 +27,13 @@ const InviteUser = () => {
 
   if (!groupId) {
     return null;
+  }
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 pb-20">
+        <Loading message="招待中です..." />
+      </div>
+    );
   }
 
   const group = getGroupById(groupId);
@@ -39,9 +48,11 @@ const InviteUser = () => {
     );
   }
 
-  const onSubmit = (data: InviteFormData) => {
-    inviteUser(groupId, data.email);
+  const onSubmit = async (data: InviteFormData) => {
+    setIsLoading(true);
+    await inviteUser(groupId, data.email);
     alert(`${data.email} を招待しました！`);
+    setIsLoading(false);
     reset();
   };
 
@@ -62,12 +73,14 @@ const InviteUser = () => {
             </label>
             <input
               type="email"
-              {...register('email')}
+              {...register("email")}
               placeholder="example@example.com"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             />
             {errors.email && (
-              <p className="text-red-600 text-sm mt-1">{errors.email.message}</p>
+              <p className="text-red-600 text-sm mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -80,15 +93,13 @@ const InviteUser = () => {
           <div className="flex space-x-4">
             <button
               type="button"
-              onClick={() => navigate('/settings')}
-              className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
-            >
+              onClick={() => navigate("/settings")}
+              className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
               戻る
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
-            >
+              className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors">
               招待
             </button>
           </div>
@@ -102,8 +113,7 @@ const InviteUser = () => {
             {group.members.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center space-x-2 text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded"
-              >
+                className="flex items-center space-x-2 text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded">
                 <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                 <span className="font-medium">{member.name}</span>
                 <span className="text-gray-400">({member.email})</span>

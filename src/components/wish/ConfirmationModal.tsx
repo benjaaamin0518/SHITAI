@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { answer, ParticipationSchema } from "../../types/NeonApiInterface";
+import { formatDisplayDate } from "../../utils/date";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -24,6 +25,16 @@ const ConfirmationModal = ({
   if (!isOpen || schema.type === "none") return null;
 
   const handleSubmit = (e: React.FormEvent) => {
+    if (formData.datetime) {
+      formData.datetime = formatDisplayDate(formData.datetime);
+    }
+    console.log(formData, schema);
+    if (schema.datetimeRequired == false && !formData.datetime) {
+      formData.datetime = "1900/1/1 0:00";
+    }
+    if (schema.noteRequired == false && !formData.note) {
+      formData.note = "未回答";
+    }
     console.log(formData);
     e.preventDefault();
     onSubmit(formData);

@@ -6,6 +6,12 @@ export interface User {
   email: string;
 }
 
+export interface TestUser {
+  name: string;
+  email: string;
+  password: string;
+}
+
 export interface Group {
   id: string;
   name: string;
@@ -163,15 +169,9 @@ export type insertAnswerResponse =
     }
   | { error: string; status: number };
 export type insertAnswerApiResponse = Response<insertAnswerResponse>;
-export type updateWishRequest = accessTokenAuthRequest &
-  Omit<
-    Wish,
-    | "participationConfirmSchema"
-    | "postConfirmSchema"
-    | "participants"
-    | "withdrawn"
-    | "createdAt"
-  >;
+export type updateWishRequest = accessTokenAuthRequest & {
+  id: string;
+} & Partial<Omit<Wish, "id">>;
 
 export type updateWishApiRequest = Request<updateWishRequest>;
 export type updateWishResponse =

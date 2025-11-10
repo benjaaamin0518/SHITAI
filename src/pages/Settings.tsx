@@ -10,6 +10,7 @@ import {
 import { useAppStore } from "../store/useAppStore";
 import { useGroupStore } from "../store/useGroupStore";
 import { useAuth } from "../store/useAuth";
+import { useEffect } from "react";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -18,8 +19,7 @@ const Settings = () => {
   const { logout: authLogout } = useAuth();
   const currentGroupId = useAppStore((state) => state.currentGroupId);
   const groups = useGroupStore((state) => state.groups);
-  const currentGroup = groups.find((g) => g.id === currentGroupId);
-
+  let currentGroup = groups.find((g) => g.id == currentGroupId);
   const handleLogout = () => {
     if (confirm("ログアウトしますか？")) {
       logout();

@@ -1,23 +1,35 @@
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import 'dayjs/locale/ja';
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/ja";
 
 dayjs.extend(relativeTime);
-dayjs.locale('ja');
+dayjs.locale("ja");
 
-export const formatDate = (date: string | Date, format = 'YYYY/MM/DD'): string => {
+export const formatDate = (
+  date: string | Date,
+  format = "YYYY/MM/DD"
+): string => {
+  return dayjs(date).format(format);
+};
+
+export const formatDisplayDate = (
+  date: string | Date,
+  format = "YYYY/MM/DD HH:mm"
+): string => {
   return dayjs(date).format(format);
 };
 
 export const formatDateTime = (date: string | Date): string => {
-  return dayjs(date).format('YYYY/MM/DD HH:mm');
+  return dayjs(date).format("YYYY-MM-DDTHH:mm");
 };
 
 export const getRelativeTime = (date: string | Date): string => {
   return dayjs(date).fromNow();
 };
 
-export const getTimeRemaining = (deadline: string | Date): {
+export const getTimeRemaining = (
+  deadline: string | Date
+): {
   days: number;
   hours: number;
   minutes: number;
@@ -36,7 +48,7 @@ export const getTimeRemaining = (deadline: string | Date): {
       minutes: 0,
       seconds: 0,
       expired: true,
-      text: '期限切れ',
+      text: "期限切れ",
     };
   }
 
@@ -45,7 +57,7 @@ export const getTimeRemaining = (deadline: string | Date): {
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-  let text = '';
+  let text = "";
   if (days > 0) {
     text = `残り ${days}日 ${hours}時間`;
   } else if (hours > 0) {
@@ -71,9 +83,9 @@ export const isDateInPast = (date: string | Date): boolean => {
 };
 
 export const addDays = (date: string | Date, days: number): string => {
-  return dayjs(date).add(days, 'day').toISOString();
+  return dayjs(date).add(days, "day").toISOString();
 };
 
 export const addHours = (date: string | Date, hours: number): string => {
-  return dayjs(date).add(hours, 'hour').toISOString();
+  return dayjs(date).add(hours, "hour").toISOString();
 };

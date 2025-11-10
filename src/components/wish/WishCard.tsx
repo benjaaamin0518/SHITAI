@@ -3,6 +3,7 @@ import { Wish } from "../../types/NeonApiInterface";
 import { useWishStore } from "../../store/useWishStore";
 import { Calendar, Users, Clock } from "lucide-react";
 import dayjs from "dayjs";
+import { formatDisplayDate } from "../../utils/date";
 
 interface WishCardProps {
   wish: Wish;
@@ -66,12 +67,18 @@ const WishCard = ({ wish }: WishCardProps) => {
         <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">
           {wish.title}
         </h3>
-        {wish.displayDate && (
+        {(wish.implementationDatetime && (
           <div className="flex items-center text-sm text-gray-600 mb-1">
             <Calendar size={14} className="mr-1 flex-shrink-0" />
-            <span>{wish.displayDate}</span>
+            <span>{formatDisplayDate(wish.implementationDatetime)}</span>
           </div>
-        )}
+        )) ||
+          (wish.displayDate && (
+            <div className="flex items-center text-sm text-gray-600 mb-1">
+              <Calendar size={14} className="mr-1 flex-shrink-0" />
+              <span>{wish.displayDate}</span>
+            </div>
+          ))}
         {wish.displayText && (
           <p className="text-sm text-gray-600 mb-3 line-clamp-2 flex-grow">
             {wish.displayText}

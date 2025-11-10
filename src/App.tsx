@@ -24,6 +24,7 @@ import { Group } from "lucide-react";
 import { useAppStore } from "./store/useAppStore";
 import UserParticipation from "./pages/UserParticipation";
 import { getGroups, useGroupStore } from "./store/useGroupStore";
+import { getWishes, useWishStore } from "./store/useWishStore";
 
 function App() {
   const { auth } = useAuth();
@@ -39,7 +40,9 @@ function App() {
         name,
         email,
       });
-      setGroups(await getGroups());
+      const groups = await getGroups();
+      localStorage.setItem("shitai-groups", JSON.stringify(groups));
+      setGroups(groups);
     })();
   }, []);
   return (

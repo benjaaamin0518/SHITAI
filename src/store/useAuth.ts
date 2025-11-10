@@ -61,6 +61,8 @@ export const useAuth = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem("shitai-accessToken");
     localStorage.removeItem("shitai-refreshToken");
+    localStorage.removeItem("shitai-groupId");
+    localStorage.removeItem("shitai-groups");
     set({ isAuthenticated: false });
   },
 }));

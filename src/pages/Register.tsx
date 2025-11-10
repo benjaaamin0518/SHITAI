@@ -15,6 +15,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const client = new NeonClientApi();
   const { login } = useAuth();
   if (isAuthenticated) {
@@ -48,7 +49,7 @@ const Register = () => {
         return;
       }
       await login(email, password);
-      navigate("/login");
+      setShowSuccessDialog(true);
     } catch (err) {
       setError("登録に失敗しました。");
     } finally {
@@ -154,13 +155,24 @@ const Register = () => {
             </button>
           </div>
         </div>
-
-        <div className="mt-6 text-center">
-          <p className="text-white text-sm">
-            デモアプリケーションです。入力された情報はローカルに保存されます。
-          </p>
-        </div>
       </div>
+      {showSuccessDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">登録完了</h3>
+            <p className="text-gray-700 mb-6">
+              登録した内容で再度ログインしてください。
+            </p>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => navigate("/login")}
+                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                ログインする。
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

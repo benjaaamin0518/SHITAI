@@ -2,8 +2,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useWishStore } from "../store/useWishStore";
 import CreateWishForm from "../components/wish/CreateWishForm";
 import { WishFormData, ParticipationSchema } from "../types/NeonApiInterface";
+import { formatDateTime } from "../utils/date";
+import { useState } from "react";
+import Loading from "../components/common/Loading";
 
 const WishEdit = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const getWishById = useWishStore((state) => state.getWishById);
@@ -14,7 +18,13 @@ const WishEdit = () => {
   }
 
   const wish = getWishById(id);
-
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 pb-20">
+        <Loading message="更新中です..." />
+      </div>
+    );
+  }
   if (!wish) {
     return (
       <div className="container mx-auto px-4 py-8 pb-20">
@@ -33,62 +43,17 @@ const WishEdit = () => {
     displayText: wish.displayText,
     notes: wish.notes,
     deadline: wish.deadline,
+    implementationDatetime: wish.implementationDatetime,
     minParticipants: wish.minParticipants,
     maxParticipants: wish.maxParticipants,
     actionLabel: wish.actionLabel,
-    participationConfirmType: wish.participationConfirmSchema.type,
-    participationDatetimeLabel: wish.participationConfirmSchema.datetimeLabel,
-    participationDatetimeRequired:
-      wish.participationConfirmSchema.datetimeRequired,
-    participationNoteLabel: wish.participationConfirmSchema.noteLabel,
-    participationNoteRequired: wish.participationConfirmSchema.noteRequired,
-    postConfirmType: wish.postConfirmSchema.type,
-    postDatetimeLabel: wish.postConfirmSchema.datetimeLabel,
-    postDatetimeRequired: wish.postConfirmSchema.datetimeRequired,
-    postNoteLabel: wish.postConfirmSchema.noteLabel,
-    postNoteRequired: wish.postConfirmSchema.noteRequired,
   };
 
-  const handleSubmit = (data: WishFormData) => {
+  const handleSubmit = async (data: WishFormData) => {
+    setIsLoading(true);
     const category = data.newCategory || data.category;
 
-    const participationConfirmSchema: ParticipationSchema = {
-      type: data.participationConfirmType,
-      ...(data.participationConfirmType === "datetime" && {
-        datetimeLabel: data.participationDatetimeLabel,
-        datetimeRequired: data.participationDatetimeRequired,
-      }),
-      ...(data.participationConfirmType === "note" && {
-        noteLabel: data.participationNoteLabel,
-        noteRequired: data.participationNoteRequired,
-      }),
-      ...(data.participationConfirmType === "mixed" && {
-        datetimeLabel: data.participationDatetimeLabel,
-        datetimeRequired: data.participationDatetimeRequired,
-        noteLabel: data.participationNoteLabel,
-        noteRequired: data.participationNoteRequired,
-      }),
-    };
-
-    const postConfirmSchema: ParticipationSchema = {
-      type: data.postConfirmType,
-      ...(data.postConfirmType === "datetime" && {
-        datetimeLabel: data.postDatetimeLabel,
-        datetimeRequired: data.postDatetimeRequired,
-      }),
-      ...(data.postConfirmType === "note" && {
-        noteLabel: data.postNoteLabel,
-        noteRequired: data.postNoteRequired,
-      }),
-      ...(data.postConfirmType === "mixed" && {
-        datetimeLabel: data.postDatetimeLabel,
-        datetimeRequired: data.postDatetimeRequired,
-        noteLabel: data.postNoteLabel,
-        noteRequired: data.postNoteRequired,
-      }),
-    };
-
-    editWish(id, {
+    await editWish(id, {
       category,
       imageData: data.imageData,
       title: data.title,
@@ -99,10 +64,9 @@ const WishEdit = () => {
       minParticipants: data.minParticipants,
       maxParticipants: data.maxParticipants,
       actionLabel: data.actionLabel,
-      participationConfirmSchema,
-      postConfirmSchema,
+      implementationDatetime: data.implementationDatetime,
     });
-
+    setIsLoading(false);
     navigate(`/wish/${id}`);
   };
 

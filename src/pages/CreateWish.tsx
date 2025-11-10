@@ -3,13 +3,22 @@ import { useAppStore } from "../store/useAppStore";
 import { useWishStore } from "../store/useWishStore";
 import CreateWishForm from "../components/wish/CreateWishForm";
 import { WishFormData, ParticipationSchema } from "../types/NeonApiInterface";
+import Loading from "../components/common/Loading";
+import { useState } from "react";
 
 const CreateWish = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const currentUser = useAppStore((state) => state.currentUser);
   const currentGroupId = useAppStore((state) => state.currentGroupId);
   const createWish = useWishStore((state) => state.createWish);
-
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 pb-20">
+        <Loading message="作成中です..." />
+      </div>
+    );
+  }
   if (!currentUser) {
     return (
       <div className="container mx-auto px-4 py-8 pb-20">
@@ -35,7 +44,8 @@ const CreateWish = () => {
     );
   }
 
-  const handleSubmit = (data: WishFormData) => {
+  const handleSubmit = async (data: WishFormData) => {
+    setIsLoading(true);
     const category = data.newCategory || data.category;
 
     const participationConfirmSchema: ParticipationSchema = {
@@ -74,7 +84,7 @@ const CreateWish = () => {
       }),
     };
 
-    const wishId = createWish({
+    const wishId = await createWish({
       groupId: currentGroupId,
       creatorId: currentUser.id,
       category,
@@ -89,8 +99,9 @@ const CreateWish = () => {
       actionLabel: data.actionLabel,
       participationConfirmSchema,
       postConfirmSchema,
+      implementationDatetime: data.implementationDatetime,
     });
-
+    setIsLoading(false);
     navigate(`/wish/${wishId}`);
   };
 

@@ -2,24 +2,25 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
-import { User } from "../types/NeonApiInterface";
+import { TestUser, User } from "../types/NeonApiInterface";
 import { useAuth } from "../store/useAuth";
+import { getGroups, useGroupStore } from "../store/useGroupStore";
 
-const testUsers: User[] = [
+const testUsers: TestUser[] = [
   {
-    id: "user-1",
     name: "田中太郎",
     email: "tanaka@example.com",
+    password: "testtest",
   },
   {
-    id: "user-2",
     name: "佐藤花子",
     email: "sato@example.com",
+    password: "testtest",
   },
   {
-    id: "user-3",
     name: "鈴木一郎",
     email: "suzuki@example.com",
+    password: "testtest",
   },
 ];
 
@@ -31,7 +32,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const setGroups = useGroupStore((state) => state.setGroups);
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -46,6 +47,9 @@ const Login = () => {
         name: user.name,
         email: user.email,
       });
+      const groups = await getGroups();
+      localStorage.setItem("shitai-groups", JSON.stringify(groups));
+      setGroups(groups);
       navigate("/");
     } else {
       setError(
@@ -55,13 +59,28 @@ const Login = () => {
     setIsLoading(false);
   };
 
-  const handleQuickLogin = (user: User) => {
+  const handleQuickLogin = async (user: TestUser) => {
+    setError("");
     setIsLoading(true);
-    setTimeout(() => {
-      setUser(user);
+
+    const response = await login(user.email, user.password);
+
+    if (response.statusCode === 200) {
+      setUser({
+        id: response.id ? response.id.toString() : "",
+        name: response.name,
+        email: response.email,
+      });
+      const groups = await getGroups();
+      localStorage.setItem("shitai-groups", JSON.stringify(groups));
+      setGroups(groups);
       navigate("/");
-      setIsLoading(false);
-    }, 300);
+    } else {
+      setError(
+        "ユーザーが見つかりません。正しいメールアドレスを入力してください。"
+      );
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -141,7 +160,7 @@ const Login = () => {
             <div className="space-y-2">
               {testUsers.map((user) => (
                 <button
-                  key={user.id}
+                  key={user.name}
                   onClick={() => handleQuickLogin(user)}
                   disabled={isLoading}
                   className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-lg font-medium transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-left px-4">
@@ -156,12 +175,6 @@ const Login = () => {
               ))}
             </div>
           </div>
-        </div>
-
-        <div className="mt-6 text-center">
-          <p className="text-white text-sm">
-            デモアプリケーションです。テストユーザーでログインしてお試しください。
-          </p>
         </div>
       </div>
     </div>

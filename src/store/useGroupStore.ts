@@ -5,8 +5,8 @@ import { NeonClientApi } from "../components/common/NeonApiClient";
 
 interface GroupStore {
   groups: Group[];
-  createGroup: (name: string, creator: User) => string;
-  inviteUser: (groupId: string, user: User) => void;
+  createGroup: (name: string, creator: User) => Promise<string>;
+  inviteUser: (groupId: string, email: string) => Promise<void>;
   getGroupById: (id: string) => Group | undefined;
   setGroups: (groups: Group[]) => void;
 }
@@ -18,6 +18,7 @@ export const getGroups = async () => {
         accessToken: localStorage.getItem("shitai-accessToken") || "",
       },
     });
+    localStorage.setItem("shitai-groups", JSON.stringify(groups));
     return groups;
   } catch (error) {
     return [];
@@ -25,26 +26,34 @@ export const getGroups = async () => {
 };
 export const useGroupStore = create<GroupStore>()((set, get) => ({
   groups: [],
-  createGroup: (name, creator) => {
-    const newGroup: Group = {
-      id: `group-${Date.now()}`,
+  createGroup: async (name, creator) => {
+    const result = await client.insertGroup({
+      userInfo: {
+        accessToken: localStorage.getItem("shitai-accessToken") || "",
+      },
       name,
-      members: [creator],
-    };
-    set((state) => ({ groups: [...state.groups, newGroup] }));
-    return newGroup.id;
-  },
-  inviteUser: (groupId, user) => {
+    });
+    const newGroups = await getGroups();
     set((state) => ({
-      groups: state.groups.map((g) =>
-        g.id === groupId && !g.members.some((m) => m.id === user.id)
-          ? { ...g, members: [...g.members, user] }
-          : g
-      ),
+      groups: newGroups,
+    }));
+    return result.id || "";
+  },
+  inviteUser: async (groupId, user) => {
+    const result = await client.invitationGroup({
+      userInfo: {
+        accessToken: localStorage.getItem("shitai-accessToken") || "",
+      },
+      groupId,
+      invitationUserId: user,
+    });
+    const newGroups = await getGroups();
+    set((state) => ({
+      groups: newGroups,
     }));
   },
-  getGroupById: (id) => get().groups.find((g) => g.id === id),
+  getGroupById: (id) => get().groups.find((g) => g.id == id),
   setGroups: (groups) => {
-    set((state) => ({ groups: groups }));
+    set((state) => ({ groups: [...groups] }));
   },
 }));

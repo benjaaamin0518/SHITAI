@@ -11,13 +11,12 @@ import { Wish } from "../types/NeonApiInterface";
 const UserParticipation = () => {
   const navigate = useNavigate();
   const currentGroupId = useAppStore((state) => state.currentGroupId);
+  let currentGroup = useGroupStore().groups.find((g) => g.id == currentGroupId);
   const groups = useGroupStore((state) => state.groups);
-  const currentGroup = groups.find((g) => g.id === currentGroupId);
   const getWishesByGroupId = useWishStore((state) => state.getWishesByGroupId);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const dateRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-
   const handleUserSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOptions = Array.from(e.target.selectedOptions).map(
       (option) => option.value
@@ -27,23 +26,26 @@ const UserParticipation = () => {
   };
 
   const getUserParticipationData = () => {
+    console.log(selectedUserIds);
     if (!currentGroupId || selectedUserIds.length === 0)
       return { eventDates: [], wishesByDate: {} };
 
     const allWishes = getWishesByGroupId(currentGroupId).filter(
       (w) => !w.withdrawn
     );
-
+    console.log(allWishes);
     const userWishes = allWishes.filter((wish) =>
-      wish.participants.some((p) => selectedUserIds.includes(p.userId))
+      wish.participants.some((p) =>
+        selectedUserIds.includes(p.userId.toString())
+      )
     );
 
     const wishesByDate: { [key: string]: Wish[] } = {};
     const eventDates: string[] = [];
 
     userWishes.forEach((wish) => {
-      if (wish.displayDate) {
-        const dateKey = dayjs(wish.displayDate).format("YYYY-MM-DD");
+      if (wish.implementationDatetime) {
+        const dateKey = dayjs(wish.implementationDatetime).format("YYYY-MM-DD");
         if (!wishesByDate[dateKey]) {
           wishesByDate[dateKey] = [];
           eventDates.push(dateKey);
@@ -54,12 +56,12 @@ const UserParticipation = () => {
 
     Object.keys(wishesByDate).forEach((date) => {
       wishesByDate[date].sort((a, b) => {
-        const timeA = dayjs(a.displayDate).valueOf();
-        const timeB = dayjs(b.displayDate).valueOf();
+        const timeA = dayjs(a.implementationDatetime).valueOf();
+        const timeB = dayjs(b.implementationDatetime).valueOf();
         return timeA - timeB;
       });
     });
-
+    console.log(userWishes, wishesByDate);
     return { eventDates, wishesByDate };
   };
 
@@ -168,10 +170,12 @@ const UserParticipation = () => {
                       <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg divide-y">
                         {wishesByDate[date].map((wish) => {
                           const participantNames = wish.participants
-                            .filter((p) => selectedUserIds.includes(p.userId))
+                            .filter((p) =>
+                              selectedUserIds.includes(p.userId.toString())
+                            )
                             .map((p) => {
                               const user = currentGroup?.members.find(
-                                (m) => m.id === p.userId
+                                (m) => m.id == p.userId
                               );
                               return user?.name;
                             })
@@ -190,11 +194,11 @@ const UserParticipation = () => {
                                     <div className="font-semibold text-gray-800 mb-1">
                                       {wish.title}
                                     </div>
-                                    {wish.displayDate && (
+                                    {wish.implementationDatetime && (
                                       <div className="text-sm text-gray-600 mb-1">
-                                        {dayjs(wish.displayDate).format(
-                                          "HH:mm"
-                                        )}
+                                        {dayjs(
+                                          wish.implementationDatetime
+                                        ).format("HH:mm")}
                                       </div>
                                     )}
                                     <div className="text-sm text-purple-600 font-medium">

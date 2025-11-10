@@ -1,9 +1,9 @@
-import { useNavigate } from 'react-router-dom';
-import { Trophy, Users } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { useAppStore } from '../store/useAppStore';
-import { useWishStore } from '../store/useWishStore';
-import Loading from '../components/common/Loading';
+import { useNavigate } from "react-router-dom";
+import { Trophy, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAppStore } from "../store/useAppStore";
+import { getWishes, useWishStore } from "../store/useWishStore";
+import Loading from "../components/common/Loading";
 
 const Ranking = () => {
   const navigate = useNavigate();
@@ -11,12 +11,13 @@ const Ranking = () => {
   const currentGroupId = useAppStore((state) => state.currentGroupId);
   const wishes = useWishStore((state) => state.wishes);
   const getRankingWishes = useWishStore((state) => state.getRankingWishes);
+  const setWishes = useWishStore((state) => state.setWishes);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    (async () => {
+      setWishes(await getWishes());
       setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
+    })();
   }, [currentGroupId]);
 
   if (!currentGroupId) {
@@ -29,7 +30,9 @@ const Ranking = () => {
     );
   }
 
-  const rankingWishes = getRankingWishes().filter((w) => w.groupId === currentGroupId);
+  const rankingWishes = getRankingWishes().filter(
+    (w) => w.groupId == currentGroupId
+  );
 
   if (isLoading) {
     return (
@@ -59,21 +62,26 @@ const Ranking = () => {
             <div
               key={wish.id}
               onClick={() => navigate(`/wish/${wish.id}`)}
-              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
-            >
+              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
               <div className="flex items-center p-4">
                 <div className="flex-shrink-0 w-16 text-center">
                   {index === 0 && (
-                    <div className="text-3xl font-bold text-yellow-500">1st</div>
+                    <div className="text-3xl font-bold text-yellow-500">
+                      1st
+                    </div>
                   )}
                   {index === 1 && (
                     <div className="text-3xl font-bold text-gray-400">2nd</div>
                   )}
                   {index === 2 && (
-                    <div className="text-3xl font-bold text-orange-600">3rd</div>
+                    <div className="text-3xl font-bold text-orange-600">
+                      3rd
+                    </div>
                   )}
                   {index > 2 && (
-                    <div className="text-2xl font-bold text-gray-600">{index + 1}</div>
+                    <div className="text-2xl font-bold text-gray-600">
+                      {index + 1}
+                    </div>
                   )}
                 </div>
 
@@ -107,7 +115,7 @@ const Ranking = () => {
                     </span>
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    / {wish.minParticipants}人
+                    / {wish.maxParticipants}人
                   </div>
                 </div>
               </div>

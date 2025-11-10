@@ -3,6 +3,7 @@ import { Calendar, Users, CheckCircle } from "lucide-react";
 import { Wish } from "../../types/NeonApiInterface";
 import { useWishStore } from "../../store/useWishStore";
 import dayjs from "dayjs";
+import { formatDisplayDate } from "../../utils/date";
 
 interface WishListItemProps {
   wish: Wish;
@@ -49,19 +50,25 @@ const WishListItem = ({ wish }: WishListItemProps) => {
             )}
 
             {wish.withdrawn && (
-              <div className="bg-gray-400 text-white px-3 py-1 rounded-full text-sm font-semibold">
+              <div className="bg-gray-400 text-white px-3 py-1 ml-2 rounded-full text-sm font-semibold">
                 取り下げ済み
               </div>
             )}
           </div>
 
           <div className="space-y-1 text-sm">
-            {wish.displayDate && (
+            {(wish.implementationDatetime && (
               <div className="flex items-center text-gray-600">
                 <Calendar size={14} className="mr-1" />
-                <span>{wish.displayDate}</span>
+                <span>{formatDisplayDate(wish.implementationDatetime)}</span>
               </div>
-            )}
+            )) ||
+              (wish.displayDate && (
+                <div className="flex items-center text-gray-600">
+                  <Calendar size={14} className="mr-1" />
+                  <span>{wish.displayDate}</span>
+                </div>
+              ))}
 
             {wish.displayText && (
               <p className="text-gray-600 line-clamp-2">{wish.displayText}</p>
@@ -71,7 +78,7 @@ const WishListItem = ({ wish }: WishListItemProps) => {
               <div className="flex items-center space-x-1 text-blue-600">
                 <Users size={16} />
                 <span className="font-semibold">
-                  {wish.participants.length} / {wish.minParticipants}人
+                  {wish.participants.length} / {wish.maxParticipants}人
                 </span>
               </div>
 

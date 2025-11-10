@@ -1,9 +1,11 @@
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useAppStore } from '../store/useAppStore';
-import { useGroupStore } from '../store/useGroupStore';
-import { groupFormSchema } from '../utils/validators';
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAppStore } from "../store/useAppStore";
+import { useGroupStore } from "../store/useGroupStore";
+import { groupFormSchema } from "../utils/validators";
+import { useState } from "react";
+import Loading from "../components/common/Loading";
 
 interface GroupFormData {
   name: string;
@@ -14,7 +16,7 @@ const GroupCreate = () => {
   const currentUser = useAppStore((state) => state.currentUser);
   const selectGroup = useAppStore((state) => state.selectGroup);
   const createGroup = useGroupStore((state) => state.createGroup);
-
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -22,7 +24,13 @@ const GroupCreate = () => {
   } = useForm<GroupFormData>({
     resolver: zodResolver(groupFormSchema),
   });
-
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 pb-20">
+        <Loading message="作成中です..." />
+      </div>
+    );
+  }
   if (!currentUser) {
     return (
       <div className="container mx-auto px-4 py-8 pb-20">
@@ -33,10 +41,12 @@ const GroupCreate = () => {
     );
   }
 
-  const onSubmit = (data: GroupFormData) => {
-    const groupId = createGroup(data.name, currentUser);
+  const onSubmit = async (data: GroupFormData) => {
+    setIsLoading(true);
+    const groupId = await createGroup(data.name, currentUser);
     selectGroup(groupId);
-    navigate('/');
+    setIsLoading(false);
+    navigate("/");
   };
 
   return (
@@ -54,7 +64,7 @@ const GroupCreate = () => {
             </label>
             <input
               type="text"
-              {...register('name')}
+              {...register("name")}
               placeholder="例：友達グループ"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             />
@@ -66,15 +76,13 @@ const GroupCreate = () => {
           <div className="flex space-x-4">
             <button
               type="button"
-              onClick={() => navigate('/settings')}
-              className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
-            >
+              onClick={() => navigate("/settings")}
+              className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
               キャンセル
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
-            >
+              className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors">
               作成
             </button>
           </div>
