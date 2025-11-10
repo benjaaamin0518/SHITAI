@@ -33,6 +33,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const setGroups = useGroupStore((state) => state.setGroups);
+  const selectGroup = useAppStore((state) => state.selectGroup);
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -49,6 +50,7 @@ const Login = () => {
       });
       const groups = await getGroups();
       localStorage.removeItem("shitai-groupId");
+      selectGroup(null);
       localStorage.setItem("shitai-groups", JSON.stringify(groups));
       setGroups(groups);
       navigate("/");
