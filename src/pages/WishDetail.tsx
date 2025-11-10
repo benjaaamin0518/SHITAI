@@ -334,7 +334,9 @@ const WishDetail = () => {
                               {participant.postAnswers.datetime ==
                               "1900/1/1 0:00"
                                 ? "未回答"
-                                : formatDisplayDate(participant.postAnswers.datetime)}
+                                : dayjs(participant.postAnswers.datetime)
+                              .utc()
+                              .format("YYYY/MM/DD HH:mm")}
                             </div>
                           )}
                           {participant.postAnswers?.note && (
