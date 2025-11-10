@@ -26,7 +26,7 @@ const ConfirmationModal = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     if (formData.datetime) {
-      formData.datetime = formatDisplayDate(formData.datetime);
+      formData.datetime = formData.datetime;
     }
     console.log(formData, schema);
     if (schema.datetimeRequired == false && !formData.datetime) {
