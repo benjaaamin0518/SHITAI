@@ -224,10 +224,10 @@ const WishDetail = () => {
                   期限
                 </div>
                 <div className="text-lg font-bold text-orange-900">
-                  {dayjs(wish.deadline).format("YYYY/MM/DD HH:mm")}
+                  {dayjs(wish.deadline).utc().format("YYYY/MM/DD HH:mm")}
                 </div>
                 <div className="text-sm text-orange-600 mt-1">
-                  {dayjs(wish.deadline).fromNow()}
+                  {dayjs(wish.deadline).utc().fromNow()}
                 </div>
               </div>
             )}
@@ -279,9 +279,9 @@ const WishDetail = () => {
                             {member?.name || "Unknown"}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {dayjs(participant.joinedAt).format(
-                              "YYYY/MM/DD HH:mm"
-                            )}
+                            {dayjs(participant.joinedAt)
+                              .utc()
+                              .format("YYYY/MM/DD HH:mm")}
                           </div>
                         </div>
                         {isConfirmed && (

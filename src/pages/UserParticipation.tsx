@@ -45,7 +45,9 @@ const UserParticipation = () => {
 
     userWishes.forEach((wish) => {
       if (wish.implementationDatetime) {
-        const dateKey = dayjs(wish.implementationDatetime).format("YYYY-MM-DD");
+        const dateKey = dayjs(wish.implementationDatetime)
+          .utc()
+          .format("YYYY-MM-DD");
         if (!wishesByDate[dateKey]) {
           wishesByDate[dateKey] = [];
           eventDates.push(dateKey);
@@ -56,8 +58,8 @@ const UserParticipation = () => {
 
     Object.keys(wishesByDate).forEach((date) => {
       wishesByDate[date].sort((a, b) => {
-        const timeA = dayjs(a.implementationDatetime).valueOf();
-        const timeB = dayjs(b.implementationDatetime).valueOf();
+        const timeA = dayjs(a.implementationDatetime).utc().valueOf();
+        const timeB = dayjs(b.implementationDatetime).utc().valueOf();
         return timeA - timeB;
       });
     });
@@ -67,7 +69,7 @@ const UserParticipation = () => {
 
   const { eventDates, wishesByDate } = getUserParticipationData();
   const sortedDates = Object.keys(wishesByDate).sort(
-    (a, b) => dayjs(a).valueOf() - dayjs(b).valueOf()
+    (a, b) => dayjs(a).utc().valueOf() - dayjs(b).utc().valueOf()
   );
 
   const handleDateClick = (date: string) => {
@@ -164,7 +166,7 @@ const UserParticipation = () => {
                       className="scroll-mt-6">
                       <div className="bg-red-50 px-4 py-2 rounded-t-lg border-l-4 border-red-500">
                         <h4 className="font-bold text-red-800">
-                          {dayjs(date).format("YYYY年M月D日 (ddd)")}
+                          {dayjs(date).utc().format("YYYY年M月D日 (ddd)")}
                         </h4>
                       </div>
                       <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg divide-y">
@@ -196,9 +198,9 @@ const UserParticipation = () => {
                                     </div>
                                     {wish.implementationDatetime && (
                                       <div className="text-sm text-gray-600 mb-1">
-                                        {dayjs(
-                                          wish.implementationDatetime
-                                        ).format("HH:mm")}
+                                        {dayjs(wish.implementationDatetime)
+                                          .utc()
+                                          .format("HH:mm")}
                                       </div>
                                     )}
                                     <div className="text-sm text-purple-600 font-medium">

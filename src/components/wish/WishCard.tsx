@@ -16,8 +16,8 @@ const WishCard = ({ wish }: WishCardProps) => {
 
   const getTimeRemaining = () => {
     if (!wish.deadline) return null;
-    const now = dayjs();
-    const deadline = dayjs(wish.deadline);
+    const now = dayjs().utc();
+    const deadline = dayjs(wish.deadline).utc();
     const diff = deadline.diff(now);
 
     if (diff < 0) return "期限切れ";
