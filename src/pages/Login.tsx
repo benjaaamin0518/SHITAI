@@ -48,6 +48,7 @@ const Login = () => {
         email: user.email,
       });
       const groups = await getGroups();
+      localStorage.removeItem("shitai-groupId");
       localStorage.setItem("shitai-groups", JSON.stringify(groups));
       setGroups(groups);
       navigate("/");
