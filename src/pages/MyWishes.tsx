@@ -1,11 +1,22 @@
-import { useAppStore } from '../store/useAppStore';
-import { useWishStore } from '../store/useWishStore';
-import WishList from '../components/wish/WishList';
+import { useAppStore } from "../store/useAppStore";
+import { getWishes, useWishStore } from "../store/useWishStore";
+import WishList from "../components/wish/WishList";
+import { useEffect, useState } from "react";
+import Loading from "../components/common/Loading";
 
 const MyWishes = () => {
   const currentUser = useAppStore((state) => state.currentUser);
-  const getWishesByCreatorId = useWishStore((state) => state.getWishesByCreatorId);
-
+  const getWishesByCreatorId = useWishStore(
+    (state) => state.getWishesByCreatorId
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const setWishes = useWishStore((state) => state.setWishes);
+  useEffect(() => {
+    (async () => {
+      setWishes(await getWishes());
+      setIsLoading(false);
+    })();
+  }, []);
   if (!currentUser) {
     return (
       <div className="container mx-auto px-4 py-8 pb-20">
@@ -15,9 +26,14 @@ const MyWishes = () => {
       </div>
     );
   }
-
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 pb-20">
+        <Loading message="したいことを読み込んでいます..." />
+      </div>
+    );
+  }
   const myWishes = getWishesByCreatorId(currentUser.id);
-
   return (
     <div className="container mx-auto px-4 py-6 pb-20">
       <div className="mb-6">

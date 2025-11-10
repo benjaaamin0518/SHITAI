@@ -31,12 +31,12 @@ const WishDetail = () => {
   const updateParticipantConfirmation = useWishStore(
     (state) => state.updateParticipantConfirmation
   );
-  const [isLoading, setIsLoading] = useState(true);
   const getGroupById = useGroupStore((state) => state.getGroupById);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [showParticipationConfirm, setShowParticipationConfirm] =
     useState(false);
   const [showPostConfirm, setShowPostConfirm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const setWishes = useWishStore((state) => state.setWishes);
 
   if (!id) {

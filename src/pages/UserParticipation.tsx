@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useGroupStore } from "../store/useGroupStore";
-import { useWishStore } from "../store/useWishStore";
+import { getWishes, useWishStore } from "../store/useWishStore";
 import ParticipationCalendar from "../components/calendar/ParticipationCalendar";
 import dayjs from "dayjs";
 import { Wish } from "../types/NeonApiInterface";
+import Loading from "../components/common/Loading";
 
 const UserParticipation = () => {
   const navigate = useNavigate();
@@ -24,7 +25,14 @@ const UserParticipation = () => {
     setSelectedUserIds(selectedOptions);
     setSelectedDate(null);
   };
-
+  const [isLoading, setIsLoading] = useState(true);
+  const setWishes = useWishStore((state) => state.setWishes);
+  useEffect(() => {
+    (async () => {
+      setWishes(await getWishes());
+      setIsLoading(false);
+    })();
+  }, []);
   const getUserParticipationData = () => {
     console.log(selectedUserIds);
     if (!currentGroupId || selectedUserIds.length === 0)
@@ -90,7 +98,13 @@ const UserParticipation = () => {
       }, 100);
     }
   }, [selectedDate]);
-
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 pb-20">
+        <Loading message="参加状況を読み込んでいます..." />
+      </div>
+    );
+  }
   if (!currentGroup) {
     return (
       <div className="container mx-auto px-4 py-6 pb-20 max-w-2xl">
