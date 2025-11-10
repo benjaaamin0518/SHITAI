@@ -334,7 +334,7 @@ const WishDetail = () => {
                               {participant.postAnswers.datetime ==
                               "1900/1/1 0:00"
                                 ? "未回答"
-                                : dayjs(participant.postAnswers.datetime
+                                : dayjs(participant.postAnswers.datetime)
                               .format("YYYY/MM/DD HH:mm")}
                             </div>
                           )}
