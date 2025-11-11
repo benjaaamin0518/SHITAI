@@ -8,7 +8,11 @@ import {
   FileText,
 } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
-import { getWishes, useWishStore } from "../store/useWishStore";
+import {
+  getWishByIdCall,
+  getWishes,
+  useWishStore,
+} from "../store/useWishStore";
 import { useGroupStore } from "../store/useGroupStore";
 import ConfirmationModal from "../components/wish/ConfirmationModal";
 import dayjs from "dayjs";
@@ -38,6 +42,7 @@ const WishDetail = () => {
   const [showPostConfirm, setShowPostConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const setWishes = useWishStore((state) => state.setWishes);
+  const currentGroupId = useAppStore((state) => state.currentGroupId);
 
   if (!id) {
     return null;
@@ -45,11 +50,12 @@ const WishDetail = () => {
   const [wish, setWish] = useState(getWishById(id));
   useEffect(() => {
     (async () => {
-      setWishes(await getWishes());
+      console.log(id);
+      setWishes(await getWishByIdCall(id));
       setWish(getWishById(id));
       setIsLoading(false);
     })();
-  }, []);
+  }, [currentGroupId]);
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 pb-20">
@@ -304,8 +310,9 @@ const WishDetail = () => {
                               {participant.participationAnswers.datetime ==
                               "1900/1/1 0:00"
                                 ? "未回答"
-                                : dayjs(participant.participationAnswers.datetime)
-                              .format("YYYY/MM/DD HH:mm")}
+                                : dayjs(
+                                    participant.participationAnswers.datetime
+                                  ).format("YYYY/MM/DD HH:mm")}
                             </div>
                           )}
                           {participant.participationAnswers?.note && (
@@ -335,8 +342,9 @@ const WishDetail = () => {
                               {participant.postAnswers.datetime ==
                               "1900/1/1 0:00"
                                 ? "未回答"
-                                : dayjs(participant.postAnswers.datetime)
-                              .format("YYYY/MM/DD HH:mm")}
+                                : dayjs(
+                                    participant.postAnswers.datetime
+                                  ).format("YYYY/MM/DD HH:mm")}
                             </div>
                           )}
                           {participant.postAnswers?.note && (
@@ -362,7 +370,7 @@ const WishDetail = () => {
 
           {canJoin && (
             <button
-              onClick={handleJoinClick}
+              onClick={async () => await handleJoinClick()}
               className="w-full py-4 bg-red-600 text-white rounded-lg font-bold text-lg hover:bg-red-700 transition-colors shadow-md">
               {wish.actionLabel}
             </button>

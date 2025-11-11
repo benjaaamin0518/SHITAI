@@ -2,7 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { DEFAULT_CATEGORIES, useAppStore } from "../store/useAppStore";
-import { getWishes, useWishStore } from "../store/useWishStore";
+import {
+  getWishes,
+  getWishesByGroupIdCall,
+  useWishStore,
+} from "../store/useWishStore";
 import WishList from "../components/wish/WishList";
 import Loading from "../components/common/Loading";
 import dayjs from "dayjs";
@@ -21,13 +25,13 @@ const Home = () => {
   useEffect(() => {
     setIsLoading(true);
     (async () => {
-      setWishes(await getWishes());
       if (currentGroupId) {
+        setWishes(await getWishesByGroupIdCall(currentGroupId));
         const cat = Array.from(
-          new Set(
-            [...DEFAULT_CATEGORIES,
-            ...getWishesByGroupId(currentGroupId).map((ele) => ele.category)]
-          )
+          new Set([
+            ...DEFAULT_CATEGORIES,
+            ...getWishesByGroupId(currentGroupId).map((ele) => ele.category),
+          ])
         );
         setCategories(cat);
         setIsLoading(false);

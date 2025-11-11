@@ -52,6 +52,39 @@ export const getWishes = async () => {
     return [];
   }
 };
+export const getWishesByGroupIdCall = async (groupId: string) => {
+  try {
+    let wishes = [];
+    wishes = await client
+      .getWishes({
+        userInfo: {
+          accessToken: localStorage.getItem("shitai-accessToken") || "",
+        },
+        id: groupId,
+      })
+      .then((res) => res.wishes);
+    return wishes;
+  } catch (error) {
+    return [];
+  }
+};
+export const getWishByIdCall = async (id: string) => {
+  try {
+    let wishes: Wish[] = [];
+    const wish: Wish = await client
+      .getWishById({
+        userInfo: {
+          accessToken: localStorage.getItem("shitai-accessToken") || "",
+        },
+        id,
+      })
+      .then((res) => res.wish);
+    wishes.push(wish);
+    return wishes;
+  } catch (error) {
+    return [];
+  }
+};
 export const useWishStore = create<WishStore>()((set, get) => ({
   wishes: [],
   setWishes: (wishes: Wish[]) => {
@@ -64,10 +97,6 @@ export const useWishStore = create<WishStore>()((set, get) => ({
       },
       ...wish,
     });
-    const wishes = await getWishes();
-    set((state) => ({
-      wishes: wishes,
-    }));
     return result.id || "";
   },
   editWish: async (id, wishUpdate) => {
@@ -78,10 +107,6 @@ export const useWishStore = create<WishStore>()((set, get) => ({
       id,
       ...wishUpdate,
     });
-    const wishes = await getWishes();
-    set((state) => ({
-      wishes: wishes,
-    }));
   },
   withdrawWish: async (id) => {
     const result = await client.updateWish({
@@ -91,7 +116,7 @@ export const useWishStore = create<WishStore>()((set, get) => ({
       id,
       withdrawn: true,
     });
-    const wishes = await getWishes();
+    const wishes = await getWishByIdCall(id);
     set((state) => ({
       wishes: wishes,
     }));
@@ -110,7 +135,7 @@ export const useWishStore = create<WishStore>()((set, get) => ({
       id,
       participationAnswers: participant.participationAnswers,
     });
-    const wishes = await getWishes();
+    const wishes = await getWishByIdCall(id);
     set((state) => ({
       wishes: wishes,
     }));
@@ -126,7 +151,7 @@ export const useWishStore = create<WishStore>()((set, get) => ({
         datetime: data.datetime || "",
       },
     });
-    const wishes = await getWishes();
+    const wishes = await getWishByIdCall(wishId);
     set((state) => ({
       wishes: wishes,
     }));

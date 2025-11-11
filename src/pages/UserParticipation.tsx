@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useGroupStore } from "../store/useGroupStore";
-import { getWishes, useWishStore } from "../store/useWishStore";
+import { getWishes, getWishesByGroupIdCall, useWishStore } from "../store/useWishStore";
 import ParticipationCalendar from "../components/calendar/ParticipationCalendar";
 import dayjs from "dayjs";
 import { Wish } from "../types/NeonApiInterface";
@@ -29,10 +29,12 @@ const UserParticipation = () => {
   const setWishes = useWishStore((state) => state.setWishes);
   useEffect(() => {
     (async () => {
-      setWishes(await getWishes());
-      setIsLoading(false);
+      if (currentGroupId) {
+        setWishes(await getWishesByGroupIdCall(currentGroupId));
+        setIsLoading(false);
+      }
     })();
-  }, []);
+  }, [currentGroupId]);
   const getUserParticipationData = () => {
     console.log(selectedUserIds);
     if (!currentGroupId || selectedUserIds.length === 0)

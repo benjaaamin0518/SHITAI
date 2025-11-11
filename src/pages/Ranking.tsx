@@ -2,7 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { Trophy, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAppStore } from "../store/useAppStore";
-import { getWishes, useWishStore } from "../store/useWishStore";
+import {
+  getWishes,
+  getWishesByGroupIdCall,
+  useWishStore,
+} from "../store/useWishStore";
 import Loading from "../components/common/Loading";
 
 const Ranking = () => {
@@ -15,8 +19,10 @@ const Ranking = () => {
 
   useEffect(() => {
     (async () => {
-      setWishes(await getWishes());
-      setIsLoading(false);
+      if (currentGroupId) {
+        setWishes(await getWishesByGroupIdCall(currentGroupId));
+        setIsLoading(false);
+      }
     })();
   }, [currentGroupId]);
 

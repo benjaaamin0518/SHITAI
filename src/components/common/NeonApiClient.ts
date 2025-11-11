@@ -254,7 +254,24 @@ class NeonClientApi {
   public async getWishById(param: getWishByIdRequest) {
     let statusCode = 200;
     let message = "";
-    let wish = {};
+    let wish: Wish = {
+      id: "",
+      groupId: "",
+      creatorId: "",
+      category: "",
+      title: "",
+      minParticipants: 0,
+      actionLabel: "",
+      participationConfirmSchema: {
+        type: "none",
+      },
+      postConfirmSchema: {
+        type: "none",
+      },
+      participants: [],
+      withdrawn: false,
+      createdAt: "",
+    };
     try {
       let isExec = true;
       while (isExec) {

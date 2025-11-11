@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "../store/useAppStore";
-import { useWishStore } from "../store/useWishStore";
+import { getWishesByGroupIdCall, useWishStore } from "../store/useWishStore";
 import CreateWishForm from "../components/wish/CreateWishForm";
 import { WishFormData, ParticipationSchema } from "../types/NeonApiInterface";
 import Loading from "../components/common/Loading";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const CreateWish = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,6 +12,17 @@ const CreateWish = () => {
   const currentUser = useAppStore((state) => state.currentUser);
   const currentGroupId = useAppStore((state) => state.currentGroupId);
   const createWish = useWishStore((state) => state.createWish);
+  const setWishes = useWishStore((state) => state.setWishes);
+
+  useEffect(() => {
+    setIsLoading(true);
+    (async () => {
+      if (currentGroupId) {
+        setWishes(await getWishesByGroupIdCall(currentGroupId));
+      }
+      setIsLoading(false);
+    })();
+  }, [currentGroupId]);
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 pb-20">

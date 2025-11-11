@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { Upload, X } from "lucide-react";
 import { DEFAULT_CATEGORIES, useAppStore } from "../../store/useAppStore";
 import { formatDateTime } from "../../utils/date";
-import { useWishStore } from "../../store/useWishStore";
+import { getWishByIdCall, useWishStore } from "../../store/useWishStore";
 import Loading from "../common/Loading";
 
 interface CreateWishFormProps {
@@ -43,6 +43,7 @@ const CreateWishForm = ({
   const setCategories = useAppStore((state) => state.setCategories);
   const [isLoading, setIsLoading] = useState(true);
   const getWishesByGroupId = useWishStore((state) => state.getWishesByGroupId);
+  const setWishes = useWishStore((state) => state.setWishes);
 
   useEffect(() => {
     setIsLoading(true);
