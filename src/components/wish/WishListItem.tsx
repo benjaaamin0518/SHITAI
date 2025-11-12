@@ -84,7 +84,7 @@ const WishListItem = ({ wish }: WishListItemProps) => {
 
               {wish.deadline && (
                 <div className="text-xs text-orange-600 font-semibold">
-                  期限: {dayjs(wish.deadline).utc().fromNow()}
+                  期限: {dayjs(wish.deadline).tz("utc").fromNow()}
                 </div>
               )}
             </div>
