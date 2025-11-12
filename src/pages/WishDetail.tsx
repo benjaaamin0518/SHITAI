@@ -233,7 +233,7 @@ const WishDetail = () => {
                   {dayjs(wish.deadline).utc().format("YYYY/MM/DD HH:mm")}
                 </div>
                 <div className="text-sm text-orange-600 mt-1">
-                  {dayjs(wish.deadline).tz("utc").fromNow()}
+                  {dayjs(wish.deadline).tz("Asia/Tokyo").fromNow()}
                 </div>
               </div>
             )}
