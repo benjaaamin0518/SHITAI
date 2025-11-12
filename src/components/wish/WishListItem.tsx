@@ -84,7 +84,10 @@ const WishListItem = ({ wish }: WishListItemProps) => {
 
               {wish.deadline && (
                 <div className="text-xs text-orange-600 font-semibold">
-                  期限: {dayjs(wish.deadline).tz("Asia/Tokyo").fromNow()}
+                  期限:{" "}
+                  {dayjs(dayjs(wish.deadline).utc().format("YYYY/MM/DD HH:mm"))
+                    .tz("Asia/Tokyo")
+                    .fromNow()}
                 </div>
               )}
             </div>
