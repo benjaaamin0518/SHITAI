@@ -33,16 +33,17 @@ function App() {
   useEffect(() => {
     console.log(localStorage.getItem("shitai-accessToken"));
     (async () => {
-      const { isAuthenticated, id, name, email } = await accessTokenAuth();
+      
+      const groups = await getGroups();
+      localStorage.setItem("shitai-groups", JSON.stringify(groups));
+      setGroups(groups);
+　　　　const { isAuthenticated, id, name, email } = await accessTokenAuth();
       auth(isAuthenticated, id);
       setUser({
         id: id ? id.toString() : "",
         name,
         email,
       });
-      const groups = await getGroups();
-      localStorage.setItem("shitai-groups", JSON.stringify(groups));
-      setGroups(groups);
     })();
   }, []);
   return (
