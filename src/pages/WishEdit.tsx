@@ -36,6 +36,7 @@ const WishEdit = () => {
   useEffect(() => {
     setIsLoading(true);
     (async () => {
+      const beforeToken = localStorage.getItem("shitai-accessToken");
       const { isAuthenticated, id: uid, name, email } = await accessTokenAuth();
       auth(isAuthenticated, uid);
       setUser({
@@ -47,16 +48,24 @@ const WishEdit = () => {
         navigate("/login");
         return;
       }
-      const groups = await getGroups();
-      localStorage.setItem("shitai-groups", JSON.stringify(groups));
-      setGroups(groups);
+      const afterToken = localStorage.getItem("shitai-accessToken");
+      if (beforeToken != afterToken) {
+        const groups = await getGroups();
+        localStorage.setItem("shitai-groups", JSON.stringify(groups));
+        setGroups(groups);
+      } else {
+        const groups = localStorage.getItem("shitai-groups");
+        if (groups) {
+          setGroups(JSON.parse(groups));
+        }
+      }
       if (currentGroupId) {
         setWishes(await getWishesByGroupIdCall(currentGroupId));
         setWish(getWishById(id));
       }
       setIsLoading(false);
     })();
-  }, [currentGroupId]);
+  }, []);
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 pb-20">

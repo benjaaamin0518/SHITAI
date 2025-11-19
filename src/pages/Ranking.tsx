@@ -21,9 +21,19 @@ const Ranking = () => {
   const { auth } = useAuth();
   const setUser = useAppStore((state) => state.setUser);
   const setGroups = useGroupStore((state) => state.setGroups);
+  if (!currentGroupId) {
+    return (
+      <div className="container mx-auto px-4 py-8 pb-20">
+        <div className="text-center py-12 text-gray-500">
+          <p>グループを選択してください</p>
+        </div>
+      </div>
+    );
+  }
   useEffect(() => {
     setIsLoading(true);
     (async () => {
+      const beforeToken = localStorage.getItem("shitai-accessToken");
       const { isAuthenticated, id, name, email } = await accessTokenAuth();
       auth(isAuthenticated, id);
       setUser({
@@ -35,24 +45,23 @@ const Ranking = () => {
         navigate("/login");
         return;
       }
-      const groups = await getGroups();
-      localStorage.setItem("shitai-groups", JSON.stringify(groups));
-      setGroups(groups);
+      const afterToken = localStorage.getItem("shitai-accessToken");
+      if (beforeToken != afterToken) {
+        const groups = await getGroups();
+        localStorage.setItem("shitai-groups", JSON.stringify(groups));
+        setGroups(groups);
+      } else {
+        const groups = localStorage.getItem("shitai-groups");
+        if (groups) {
+          setGroups(JSON.parse(groups));
+        }
+      }
       if (currentGroupId) {
         setWishes(await getWishesByGroupIdCall(currentGroupId));
       }
       setIsLoading(false);
     })();
-  }, [currentGroupId]);
-  if (!currentGroupId) {
-    return (
-      <div className="container mx-auto px-4 py-8 pb-20">
-        <div className="text-center py-12 text-gray-500">
-          <p>グループを選択してください</p>
-        </div>
-      </div>
-    );
-  }
+  }, []);
 
   const rankingWishes = getRankingWishes().filter(
     (w) => w.groupId == currentGroupId

@@ -29,6 +29,7 @@ const Home = () => {
 
   useEffect(() => {
     setIsLoading(true);
+    const beforeToken = localStorage.getItem("shitai-accessToken");
     (async () => {
       const { isAuthenticated, id, name, email } = await accessTokenAuth();
       auth(isAuthenticated, id);
@@ -41,9 +42,17 @@ const Home = () => {
         navigate("/login");
         return;
       }
-      const groups = await getGroups();
-      localStorage.setItem("shitai-groups", JSON.stringify(groups));
-      setGroups(groups);
+      const afterToken = localStorage.getItem("shitai-accessToken");
+      if (beforeToken != afterToken) {
+        const groups = await getGroups();
+        localStorage.setItem("shitai-groups", JSON.stringify(groups));
+        setGroups(groups);
+      } else {
+        const groups = localStorage.getItem("shitai-groups");
+        if (groups) {
+          setGroups(JSON.parse(groups));
+        }
+      }
       if (currentGroupId) {
         setWishes(await getWishesByGroupIdCall(currentGroupId));
         const cat = Array.from(
