@@ -6,6 +6,7 @@ import Loading from "../components/common/Loading";
 import { getGroups, useGroupStore } from "../store/useGroupStore";
 import { useNavigate } from "react-router-dom";
 import { useAuth, auth as accessTokenAuth } from "../store/useAuth";
+import { Wish } from "../types/NeonApiInterface";
 
 const MyWishes = () => {
   const currentUser = useAppStore((state) => state.currentUser);
@@ -18,7 +19,16 @@ const MyWishes = () => {
   const setUser = useAppStore((state) => state.setUser);
   const setGroups = useGroupStore((state) => state.setGroups);
   const navigate = useNavigate();
-
+  const [myWishes, setMywishes] = useState([] as Wish[]);
+  if (!currentUser) {
+    return (
+      <div className="container mx-auto px-4 py-8 pb-20">
+        <div className="text-center py-12 text-gray-500">
+          <p>ユーザー情報が見つかりません</p>
+        </div>
+      </div>
+    );
+  }
   useEffect(() => {
     setIsLoading(true);
     (async () => {
@@ -48,18 +58,10 @@ const MyWishes = () => {
         }
       }
       setWishes(await getWishes());
+      setMywishes(getWishesByCreatorId(currentUser.id));
       setIsLoading(false);
     })();
   }, []);
-  if (!currentUser) {
-    return (
-      <div className="container mx-auto px-4 py-8 pb-20">
-        <div className="text-center py-12 text-gray-500">
-          <p>ユーザー情報が見つかりません</p>
-        </div>
-      </div>
-    );
-  }
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 pb-20">
@@ -67,7 +69,7 @@ const MyWishes = () => {
       </div>
     );
   }
-  const myWishes = getWishesByCreatorId(currentUser.id);
+
   return (
     <div className="container mx-auto px-4 py-6 pb-20">
       <div className="mb-6">
