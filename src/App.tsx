@@ -4,6 +4,7 @@ import {
   Route,
   Navigate,
   useSearchParams,
+  useLocation,
 } from "react-router-dom";
 import Header from "./components/common/Header";
 import FooterTabs from "./components/common/FooterTabs";
@@ -18,154 +19,38 @@ import WishEdit from "./pages/WishEdit";
 import MyWishes from "./pages/MyWishes";
 import GroupCreate from "./pages/GroupCreate";
 import InviteUser from "./pages/InviteUser";
-import { useAuth, auth as accessTokenAuth } from "./store/useAuth";
 import { useEffect } from "react";
 import { Group } from "lucide-react";
 import { useAppStore } from "./store/useAppStore";
 import UserParticipation from "./pages/UserParticipation";
 import { getGroups, useGroupStore } from "./store/useGroupStore";
 import { getWishes, useWishStore } from "./store/useWishStore";
+import { useAuth } from "./store/useAuth";
 
 function App() {
-  const { auth } = useAuth();
-  const setUser = useAppStore((state) => state.setUser);
-  const setGroups = useGroupStore((state) => state.setGroups);
-  useEffect(() => {
-    console.log(localStorage.getItem("shitai-accessToken"));
-    (async () => {
-      
-      const groups = await getGroups();
-      localStorage.setItem("shitai-groups", JSON.stringify(groups));
-      setGroups(groups);
-　　　　const { isAuthenticated, id, name, email } = await accessTokenAuth();
-      auth(isAuthenticated, id);
-      setUser({
-        id: id ? id.toString() : "",
-        name,
-        email,
-      });
-    })();
-  }, []);
+  const { isAuthenticated } = useAuth();
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-100">
-        {useAuth().isAuthenticated && <Header />}
+        {isAuthenticated && <Header />}
         <main className="min-h-screen">
           <Routes>
-            <Route
-              path="/login"
-              element={
-                useAuth().isAuthenticated ? (
-                  <Navigate to="/" replace />
-                ) : (
-                  <Login />
-                )
-              }
-            />
+            <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route
-              path="/"
-              element={
-                useAuth().isAuthenticated ? (
-                  <Home />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/ranking"
-              element={
-                useAuth().isAuthenticated ? (
-                  <Ranking />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                useAuth().isAuthenticated ? (
-                  <Settings />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/create"
-              element={
-                useAuth().isAuthenticated ? (
-                  <CreateWish />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/wish/:id"
-              element={
-                useAuth().isAuthenticated ? (
-                  <WishDetail />
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              }
-            />
-            <Route
-              path="/wish/:id/edit"
-              element={
-                useAuth().isAuthenticated ? (
-                  <WishEdit />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/my-wishes"
-              element={
-                useAuth().isAuthenticated ? (
-                  <MyWishes />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/groups/new"
-              element={
-                useAuth().isAuthenticated ? (
-                  <GroupCreate />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/groups/:groupId/invite"
-              element={
-                useAuth().isAuthenticated ? (
-                  <InviteUser />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/user-participation"
-              element={
-                useAuth().isAuthenticated ? (
-                  <UserParticipation />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
+            <Route path="/" element={<Home />} />
+            <Route path="/ranking" element={<Ranking />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/create" element={<CreateWish />} />
+            <Route path="/wish/:id" element={<WishDetail />} />
+            <Route path="/wish/:id/edit" element={<WishEdit />} />
+            <Route path="/my-wishes" element={<MyWishes />} />
+            <Route path="/groups/new" element={<GroupCreate />} />
+            <Route path="/groups/:groupId/invite" element={<InviteUser />} />
+            <Route path="/user-participation" element={<UserParticipation />} />
           </Routes>
         </main>
-        {useAuth().isAuthenticated && <FooterTabs />}
+        {isAuthenticated && <FooterTabs />}
       </div>
     </Router>
   );

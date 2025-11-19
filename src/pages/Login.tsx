@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { TestUser, User } from "../types/NeonApiInterface";
-import { useAuth } from "../store/useAuth";
 import { getGroups, useGroupStore } from "../store/useGroupStore";
+import { useAuth, auth as accessTokenAuth } from "../store/useAuth";
 
 const testUsers: TestUser[] = [
   {
@@ -34,6 +34,22 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const setGroups = useGroupStore((state) => state.setGroups);
   const selectGroup = useAppStore((state) => state.selectGroup);
+
+  const { auth } = useAuth();
+
+  useEffect(() => {
+    setIsLoading(true);
+    (async () => {
+      const { isAuthenticated, id, name, email } = await accessTokenAuth();
+      auth(isAuthenticated, id);
+      if (isAuthenticated) {
+        setIsLoading(false);
+        navigate("/");
+      }
+      setIsLoading(false);
+    })();
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");

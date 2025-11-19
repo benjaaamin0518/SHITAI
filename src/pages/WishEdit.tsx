@@ -14,6 +14,8 @@ import { formatDateTime } from "../utils/date";
 import { useEffect, useState } from "react";
 import Loading from "../components/common/Loading";
 import { useAppStore } from "../store/useAppStore";
+import { auth as accessTokenAuth, useAuth } from "../store/useAuth";
+import { getGroups, useGroupStore } from "../store/useGroupStore";
 
 const WishEdit = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,12 +26,30 @@ const WishEdit = () => {
   const setWishes = useWishStore((state) => state.setWishes);
   const currentGroupId = useAppStore((state) => state.currentGroupId);
   const [wish, setWish] = useState<Wish>();
+  const { auth } = useAuth();
+  const setUser = useAppStore((state) => state.setUser);
+  const setGroups = useGroupStore((state) => state.setGroups);
+
   if (!id) {
     return null;
   }
   useEffect(() => {
     setIsLoading(true);
     (async () => {
+      const { isAuthenticated, id: uid, name, email } = await accessTokenAuth();
+      auth(isAuthenticated, uid);
+      setUser({
+        id: uid ? uid.toString() : "",
+        name,
+        email,
+      });
+      if (!isAuthenticated) {
+        navigate("/login");
+        return;
+      }
+      const groups = await getGroups();
+      localStorage.setItem("shitai-groups", JSON.stringify(groups));
+      setGroups(groups);
       if (currentGroupId) {
         setWishes(await getWishesByGroupIdCall(currentGroupId));
         setWish(getWishById(id));

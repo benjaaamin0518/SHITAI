@@ -3,6 +3,9 @@ import { getWishes, useWishStore } from "../store/useWishStore";
 import WishList from "../components/wish/WishList";
 import { useEffect, useState } from "react";
 import Loading from "../components/common/Loading";
+import { getGroups, useGroupStore } from "../store/useGroupStore";
+import { useNavigate } from "react-router-dom";
+import { useAuth, auth as accessTokenAuth } from "../store/useAuth";
 
 const MyWishes = () => {
   const currentUser = useAppStore((state) => state.currentUser);
@@ -11,8 +14,28 @@ const MyWishes = () => {
   );
   const [isLoading, setIsLoading] = useState(true);
   const setWishes = useWishStore((state) => state.setWishes);
+  const { auth } = useAuth();
+  const setUser = useAppStore((state) => state.setUser);
+  const setGroups = useGroupStore((state) => state.setGroups);
+  const navigate = useNavigate();
+
   useEffect(() => {
+    setIsLoading(true);
     (async () => {
+      const { isAuthenticated, id, name, email } = await accessTokenAuth();
+      auth(isAuthenticated, id);
+      setUser({
+        id: id ? id.toString() : "",
+        name,
+        email,
+      });
+      if (!isAuthenticated) {
+        navigate("/login");
+        return;
+      }
+      const groups = await getGroups();
+      localStorage.setItem("shitai-groups", JSON.stringify(groups));
+      setGroups(groups);
       setWishes(await getWishes());
       setIsLoading(false);
     })();

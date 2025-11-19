@@ -11,15 +11,17 @@ import { useAppStore } from "../store/useAppStore";
 import {
   getWishByIdCall,
   getWishes,
+  getWishesByGroupIdCall,
   useWishStore,
 } from "../store/useWishStore";
-import { useGroupStore } from "../store/useGroupStore";
+import { getGroups, useGroupStore } from "../store/useGroupStore";
 import ConfirmationModal from "../components/wish/ConfirmationModal";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { linkifyText } from "../utils/linkify";
 import Loading from "../components/common/Loading";
 import { formatDisplayDate } from "../utils/date";
+import { useAuth, auth as accessTokenAuth } from "../store/useAuth";
 
 const WishDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,14 +45,32 @@ const WishDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const setWishes = useWishStore((state) => state.setWishes);
   const currentGroupId = useAppStore((state) => state.currentGroupId);
+  const { auth } = useAuth();
+  const setUser = useAppStore((state) => state.setUser);
+  const setGroups = useGroupStore((state) => state.setGroups);
 
   if (!id) {
     return null;
   }
   const [wish, setWish] = useState(getWishById(id));
+
   useEffect(() => {
+    setIsLoading(true);
     (async () => {
-      console.log(id);
+      const { isAuthenticated, id: uid, name, email } = await accessTokenAuth();
+      auth(isAuthenticated, uid);
+      setUser({
+        id: uid ? uid.toString() : "",
+        name,
+        email,
+      });
+      if (!isAuthenticated) {
+        navigate("/login");
+        return;
+      }
+      const groups = await getGroups();
+      localStorage.setItem("shitai-groups", JSON.stringify(groups));
+      setGroups(groups);
       setWishes(await getWishByIdCall(id));
       setWish(getWishById(id));
       setIsLoading(false);

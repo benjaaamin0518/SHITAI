@@ -2,10 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAppStore } from "../store/useAppStore";
-import { useGroupStore } from "../store/useGroupStore";
 import { groupFormSchema } from "../utils/validators";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Loading from "../components/common/Loading";
+import { getGroups, useGroupStore } from "../store/useGroupStore";
+import { useAuth, auth as accessTokenAuth } from "../store/useAuth";
 
 interface GroupFormData {
   name: string;
@@ -17,6 +18,32 @@ const GroupCreate = () => {
   const selectGroup = useAppStore((state) => state.selectGroup);
   const createGroup = useGroupStore((state) => state.createGroup);
   const [isLoading, setIsLoading] = useState(false);
+  const { auth } = useAuth();
+  const setUser = useAppStore((state) => state.setUser);
+  const setGroups = useGroupStore((state) => state.setGroups);
+  const currentGroupId = useAppStore((state) => state.currentGroupId);
+
+  useEffect(() => {
+    setIsLoading(true);
+    (async () => {
+      const { isAuthenticated, id, name, email } = await accessTokenAuth();
+      auth(isAuthenticated, id);
+      setUser({
+        id: id ? id.toString() : "",
+        name,
+        email,
+      });
+      if (!isAuthenticated) {
+        navigate("/login");
+        return;
+      }
+      const groups = await getGroups();
+      localStorage.setItem("shitai-groups", JSON.stringify(groups));
+      setGroups(groups);
+      setIsLoading(false);
+    })();
+  }, []);
+
   const {
     register,
     handleSubmit,

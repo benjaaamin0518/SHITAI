@@ -1,11 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useGroupStore } from "../store/useGroupStore";
 import { inviteFormSchema } from "../utils/validators";
 import Loading from "../components/common/Loading";
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import { getGroups, useGroupStore } from "../store/useGroupStore";
+import { useAuth, auth as accessTokenAuth } from "../store/useAuth";
+import { useAppStore } from "../store/useAppStore";
 interface InviteFormData {
   email: string;
 }
@@ -16,6 +17,32 @@ const InviteUser = () => {
   const inviteUser = useGroupStore((state) => state.inviteUser);
   const getGroupById = useGroupStore((state) => state.getGroupById);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { auth } = useAuth();
+  const setUser = useAppStore((state) => state.setUser);
+  const setGroups = useGroupStore((state) => state.setGroups);
+  const currentGroupId = useAppStore((state) => state.currentGroupId);
+
+  useEffect(() => {
+    setIsLoading(true);
+    (async () => {
+      const { isAuthenticated, id, name, email } = await accessTokenAuth();
+      auth(isAuthenticated, id);
+      setUser({
+        id: id ? id.toString() : "",
+        name,
+        email,
+      });
+      if (!isAuthenticated) {
+        navigate("/login");
+        return;
+      }
+      const groups = await getGroups();
+      localStorage.setItem("shitai-groups", JSON.stringify(groups));
+      setGroups(groups);
+      setIsLoading(false);
+    })();
+  }, []);
   const {
     register,
     handleSubmit,

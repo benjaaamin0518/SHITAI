@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserPlus } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { User } from "../types/NeonApiInterface";
 import { NeonClientApi } from "../components/common/NeonApiClient";
-import { useAuth } from "../store/useAuth";
+import { useAuth, auth as accessTokenAuth } from "../store/useAuth";
 const Register = () => {
   const navigate = useNavigate();
   const { logout, isAuthenticated } = useAuth();
@@ -18,9 +18,25 @@ const Register = () => {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const client = new NeonClientApi();
   const { login } = useAuth();
-  if (isAuthenticated) {
-    logout();
-  }
+  const { auth } = useAuth();
+
+  useEffect(() => {
+    setIsLoading(true);
+    (async () => {
+      const { isAuthenticated, id, name, email } = await accessTokenAuth();
+      auth(isAuthenticated, id);
+      setUser({
+        id: id ? id.toString() : "",
+        name,
+        email,
+      });
+      if (isAuthenticated) {
+        logout();
+        return;
+      }
+      setIsLoading(false);
+    })();
+  }, []);
   const handleRegister = async (e: React.FormEvent) => {
     try {
       e.preventDefault();

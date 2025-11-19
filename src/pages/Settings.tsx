@@ -8,9 +8,9 @@ import {
   Calendar,
 } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
-import { useGroupStore } from "../store/useGroupStore";
-import { useAuth } from "../store/useAuth";
+import { getGroups, useGroupStore } from "../store/useGroupStore";
 import { useEffect } from "react";
+import { useAuth, auth as accessTokenAuth } from "../store/useAuth";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -20,6 +20,28 @@ const Settings = () => {
   const currentGroupId = useAppStore((state) => state.currentGroupId);
   const groups = useGroupStore((state) => state.groups);
   let currentGroup = groups.find((g) => g.id == currentGroupId);
+  const { auth } = useAuth();
+  const setUser = useAppStore((state) => state.setUser);
+  const setGroups = useGroupStore((state) => state.setGroups);
+  useEffect(() => {
+    (async () => {
+      const { isAuthenticated, id, name, email } = await accessTokenAuth();
+      auth(isAuthenticated, id);
+      setUser({
+        id: id ? id.toString() : "",
+        name,
+        email,
+      });
+      if (!isAuthenticated) {
+        navigate("/login");
+        return;
+      }
+      const groups = await getGroups();
+      localStorage.setItem("shitai-groups", JSON.stringify(groups));
+      setGroups(groups);
+    })();
+  }, []);
+
   const handleLogout = () => {
     if (confirm("ログアウトしますか？")) {
       logout();
