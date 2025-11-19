@@ -22,21 +22,24 @@ const InviteUser = () => {
   const setUser = useAppStore((state) => state.setUser);
   const setGroups = useGroupStore((state) => state.setGroups);
   const currentGroupId = useAppStore((state) => state.currentGroupId);
+  const currentUser = useAppStore((state) => state.currentUser);
 
   useEffect(() => {
     setIsLoading(true);
     (async () => {
       const beforeToken = localStorage.getItem("shitai-accessToken");
-      const { isAuthenticated, id, name, email } = await accessTokenAuth();
-      auth(isAuthenticated, id);
-      setUser({
-        id: id ? id.toString() : "",
-        name,
-        email,
-      });
-      if (!isAuthenticated) {
-        navigate("/login");
-        return;
+      if (currentUser == null) {
+        const { isAuthenticated, id, name, email } = await accessTokenAuth();
+        auth(isAuthenticated, id);
+        setUser({
+          id: id ? id.toString() : "",
+          name,
+          email,
+        });
+        if (!isAuthenticated) {
+          navigate("/login");
+          return;
+        }
       }
       const afterToken = localStorage.getItem("shitai-accessToken");
       if (beforeToken != afterToken) {

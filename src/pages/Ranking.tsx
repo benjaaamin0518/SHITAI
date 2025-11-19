@@ -21,6 +21,8 @@ const Ranking = () => {
   const { auth } = useAuth();
   const setUser = useAppStore((state) => state.setUser);
   const setGroups = useGroupStore((state) => state.setGroups);
+  const currentUser = useAppStore((state) => state.currentUser);
+
   if (!currentGroupId) {
     return (
       <div className="container mx-auto px-4 py-8 pb-20">
@@ -34,16 +36,18 @@ const Ranking = () => {
     setIsLoading(true);
     (async () => {
       const beforeToken = localStorage.getItem("shitai-accessToken");
-      const { isAuthenticated, id, name, email } = await accessTokenAuth();
-      auth(isAuthenticated, id);
-      setUser({
-        id: id ? id.toString() : "",
-        name,
-        email,
-      });
-      if (!isAuthenticated) {
-        navigate("/login");
-        return;
+      if (currentUser == null) {
+        const { isAuthenticated, id, name, email } = await accessTokenAuth();
+        auth(isAuthenticated, id);
+        setUser({
+          id: id ? id.toString() : "",
+          name,
+          email,
+        });
+        if (!isAuthenticated) {
+          navigate("/login");
+          return;
+        }
       }
       const afterToken = localStorage.getItem("shitai-accessToken");
       if (beforeToken != afterToken) {
