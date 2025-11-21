@@ -53,7 +53,7 @@ const MyWishes = () => {
       
       setIsLoading(false);
     })();
-  }, []);
+  }, [currentUser.id]);
   if (!currentUser) {
     return (
       <div className="container mx-auto px-4 py-8 pb-20">
@@ -62,7 +62,8 @@ const MyWishes = () => {
         </div>
       </div>
     );
-  }setMywishes(getWishesByCreatorId(currentUser.id));
+  }
+setMywishes(getWishesByCreatorId(currentUser.id));
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 pb-20">
