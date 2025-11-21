@@ -20,15 +20,7 @@ const MyWishes = () => {
   const setGroups = useGroupStore((state) => state.setGroups);
   const navigate = useNavigate();
   const [myWishes, setMywishes] = useState([] as Wish[]);
-  if (!currentUser) {
-    return (
-      <div className="container mx-auto px-4 py-8 pb-20">
-        <div className="text-center py-12 text-gray-500">
-          <p>ユーザー情報が見つかりません</p>
-        </div>
-      </div>
-    );
-  }
+  
   useEffect(() => {
     setIsLoading(true);
     (async () => {
@@ -61,7 +53,16 @@ const MyWishes = () => {
       setMywishes(getWishesByCreatorId(currentUser.id));
       setIsLoading(false);
     })();
-  }, []);
+  }, [currentUser]);
+  if (!currentUser) {
+    return (
+      <div className="container mx-auto px-4 py-8 pb-20">
+        <div className="text-center py-12 text-gray-500">
+          <p>ユーザー情報が見つかりません</p>
+        </div>
+      </div>
+    );
+  }
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 pb-20">
