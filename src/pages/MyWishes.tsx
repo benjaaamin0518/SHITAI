@@ -61,7 +61,7 @@ const MyWishes = () => {
       </div>
     );
   }
-  const mywishes(getWishesByCreatorId(currentUser.id));
+  const mywishes = (getWishesByCreatorId(currentUser.id));
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 pb-20">
