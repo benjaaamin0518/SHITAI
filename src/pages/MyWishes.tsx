@@ -50,7 +50,7 @@ const MyWishes = () => {
         }
       }
       setWishes(await getWishes());
-      setMywishes(getWishesByCreatorId(currentUser.id));
+      
       setIsLoading(false);
     })();
   }, []);
@@ -62,7 +62,7 @@ const MyWishes = () => {
         </div>
       </div>
     );
-  }
+  }setMywishes(getWishesByCreatorId(currentUser.id));
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 pb-20">
