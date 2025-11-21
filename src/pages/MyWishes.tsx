@@ -19,7 +19,6 @@ const MyWishes = () => {
   const setUser = useAppStore((state) => state.setUser);
   const setGroups = useGroupStore((state) => state.setGroups);
   const navigate = useNavigate();
-  const [myWishes, setMywishes] = useState([] as Wish[]);
   
   useEffect(() => {
     setIsLoading(true);
@@ -50,7 +49,6 @@ const MyWishes = () => {
         }
       }
       setWishes(await getWishes());
-      
       setIsLoading(false);
     })();
   }, [currentUser]);
@@ -63,7 +61,7 @@ const MyWishes = () => {
       </div>
     );
   }
-setMywishes(getWishesByCreatorId(currentUser.id));
+  const mywishes(getWishesByCreatorId(currentUser.id));
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 pb-20">
