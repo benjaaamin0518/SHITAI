@@ -323,9 +323,9 @@ const WishDetail = () => {
                             {member?.name || "Unknown"}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {dayjs(participant.joinedAt)
-                              .utc()
-                              .format("YYYY/MM/DD HH:mm")}
+                            {dayjs(participant.joinedAt).format(
+                              "YYYY/MM/DD HH:mm"
+                            )}
                           </div>
                         </div>
                         {isConfirmed && (

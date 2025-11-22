@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { answer, ParticipationSchema } from "../../types/NeonApiInterface";
 import { formatDisplayDate } from "../../utils/date";
+import dayjs from "dayjs";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ const ConfirmationModal = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     if (formData.datetime) {
-      formData.datetime = formatDisplayDate(formData.datetime);
+      formData.datetime = dayjs(formData.datetime).format("YYYY-MM-DD HH:mm");
     }
     console.log(formData, schema);
     if (schema.datetimeRequired == false && !formData.datetime) {
