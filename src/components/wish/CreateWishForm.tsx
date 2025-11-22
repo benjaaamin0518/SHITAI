@@ -109,6 +109,7 @@ const CreateWishForm = ({
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result as string;
+      console.log(base64String);
       setImagePreview(base64String);
       setValue("imageData", base64String);
     };
