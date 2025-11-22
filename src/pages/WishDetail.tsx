@@ -323,11 +323,7 @@ const WishDetail = () => {
                             {member?.name || "Unknown"}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {dayjs(
-                              dayjs(participant.joinedAt)
-                                .utc()
-                                .format("YYYY/MM/DD HH:mm")
-                            )
+                            {dayjs(participant.joinedAt)
                               .utc()
                               .format("YYYY/MM/DD HH:mm")}
                           </div>
@@ -353,11 +349,7 @@ const WishDetail = () => {
                               "1900/1/1 0:00"
                                 ? "未回答"
                                 : dayjs(
-                                    dayjs(
-                                      participant.participationAnswers.datetime
-                                    )
-                                      .utc()
-                                      .format("YYYY/MM/DD HH:mm")
+                                    participant.participationAnswers.datetime
                                   ).format("YYYY/MM/DD HH:mm")}
                             </div>
                           )}
@@ -389,9 +381,7 @@ const WishDetail = () => {
                               "1900/1/1 0:00"
                                 ? "未回答"
                                 : dayjs(
-                                    dayjs(participant.postAnswers.datetime)
-                                      .utc()
-                                      .format("YYYY/MM/DD HH:mm")
+                                    participant.postAnswers.datetime
                                   ).format("YYYY/MM/DD HH:mm")}
                             </div>
                           )}
