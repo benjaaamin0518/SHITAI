@@ -89,8 +89,14 @@ const InviteUser = () => {
 
   const onSubmit = async (data: InviteFormData) => {
     setIsLoading(true);
-    await inviteUser(groupId, data.email);
-    alert(`${data.email} を招待しました！`);
+    const result = await inviteUser(groupId, data.email);
+    if (result.statusCode !== 200) {
+      alert(
+        `${data.email} の招待に失敗しました。(すでに参加済みあるいは、アカウントが存在しません。)`
+      );
+    } else {
+      alert(`${data.email} を招待しました！`);
+    }
     setIsLoading(false);
     reset();
   };

@@ -6,7 +6,12 @@ import { NeonClientApi } from "../components/common/NeonApiClient";
 interface GroupStore {
   groups: Group[];
   createGroup: (name: string, creator: User) => Promise<string>;
-  inviteUser: (groupId: string, email: string) => Promise<void>;
+  inviteUser: (
+    groupId: string,
+    email: string
+  ) => Promise<{
+    statusCode: number;
+  }>;
   getGroupById: (id: string) => Group | undefined;
   setGroups: (groups: Group[]) => void;
 }
@@ -51,6 +56,7 @@ export const useGroupStore = create<GroupStore>()((set, get) => ({
     set((state) => ({
       groups: newGroups,
     }));
+    return result;
   },
   getGroupById: (id) => get().groups.find((g) => g.id == id),
   setGroups: (groups) => {
