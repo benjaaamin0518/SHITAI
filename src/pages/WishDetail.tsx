@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { EventAttributes, createEvent } from "ics";
 import {
   Calendar,
   Users,
@@ -133,7 +134,33 @@ const WishDetail = () => {
     wish.postConfirmSchema.type !== "none" &&
     !hasPostAnswers &&
     !wish.withdrawn;
+  const createCalenderEvent = async () => {
+    // イベントの情報
+    const eventSource: EventAttributes = {
+      title: wish.title,
+      location: wish.displayText,
+      start: [
+        dayjs(wish.implementationDatetime).utc().year(),
+        dayjs(wish.implementationDatetime).utc().month() + 1,
+        dayjs(wish.implementationDatetime).utc().date(),
+        dayjs(wish.implementationDatetime).utc().hour(),
+        dayjs(wish.implementationDatetime).utc().minute(),
+      ],
+      duration: { hours: 1 },
+    };
 
+    // ファイルセット
+    const filename = "schedule.ics";
+    const event = await createEvent(eventSource).value;
+    if (event !== undefined) {
+      const file = new File([event], filename, { type: "text/calendar" });
+      const url = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "schedule.ics";
+      link.click();
+    }
+  };
   const handleJoinClick = async () => {
     if (wish.participationConfirmSchema.type !== "none") {
       setShowParticipationConfirm(true);
@@ -214,20 +241,32 @@ const WishDetail = () => {
                 </div>
               )}
             </div>
-            {isCreator && !wish.withdrawn && (
+            {(isParticipant || (isCreator && !wish.withdrawn)) && (
               <div className="flex space-x-2 ml-4">
-                <button
-                  onClick={() => navigate(`/wish/${id}/edit`)}
-                  className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
-                  title="編集">
-                  <Edit size={20} />
-                </button>
-                <button
-                  onClick={() => setShowWithdrawDialog(true)}
-                  className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                  title="取り下げ">
-                  <Trash2 size={20} />
-                </button>
+                {isParticipant && wish.implementationDatetime && (
+                  <button
+                    onClick={() => createCalenderEvent()}
+                    className="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors"
+                    title="カレンダーに追加する">
+                    <Calendar size={20} />
+                  </button>
+                )}
+                {isCreator && !wish.withdrawn && (
+                  <>
+                    <button
+                      onClick={() => navigate(`/wish/${id}/edit`)}
+                      className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                      title="編集">
+                      <Edit size={20} />
+                    </button>
+                    <button
+                      onClick={() => setShowWithdrawDialog(true)}
+                      className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                      title="取り下げ">
+                      <Trash2 size={20} />
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
