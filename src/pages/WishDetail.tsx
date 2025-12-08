@@ -139,6 +139,7 @@ const WishDetail = () => {
     const eventSource: EventAttributes = {
       title: wish.title,
       location: wish.displayText,
+　　　　url: location.href,
       start: [
         dayjs(wish.implementationDatetime).utc().year(),
         dayjs(wish.implementationDatetime).utc().month() + 1,
