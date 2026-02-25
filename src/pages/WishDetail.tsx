@@ -273,15 +273,15 @@ const WishDetail = () => {
     }>(
       (indexes, sentence, index) => {
         if (indexes.endIndex !== -1) return indexes;
-        const sentenceEnd = indexes.currentIndex + [...sentence].length + 1;
+        const sentenceEnd = indexes.currentIndex + sentence.length;
         if (sentenceEnd >= startOffset && indexes.startIndex === -1) {
           indexes.startIndex = index;
         }
         console.log({ sentence, sentenceEnd, startOffset, endOffset, indexes });
-        if (sentenceEnd - 1 >= endOffset) {
+        if (sentenceEnd >= endOffset) {
           indexes.endIndex = index;
         }
-        indexes.currentIndex += [...sentence].length;
+        indexes.currentIndex += sentence.length;
         return indexes;
       },
       { startIndex: -1, endIndex: -1, currentIndex: 0 },
