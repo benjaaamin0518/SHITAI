@@ -18,12 +18,17 @@ import {
 import { getGroups, useGroupStore } from "../store/useGroupStore";
 import ConfirmationModal from "../components/wish/ConfirmationModal";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { linkifyText } from "../utils/linkify";
 import Loading from "../components/common/Loading";
 import { formatDisplayDate } from "../utils/date";
 import { useAuth, auth as accessTokenAuth } from "../store/useAuth";
-
+type TooltipState = {
+  x: number;
+  y: number;
+  start: number;
+  end: number;
+} | null;
 const WishDetail = () => {
   const { id } = useParams<{ id: string }>();
   //const [wish,setWish] = useState(getWishById(id));
@@ -36,7 +41,7 @@ const WishDetail = () => {
   const withdrawWish = useWishStore((state) => state.withdrawWish);
   const canUserJoin = useWishStore((state) => state.canUserJoin);
   const updateParticipantConfirmation = useWishStore(
-    (state) => state.updateParticipantConfirmation
+    (state) => state.updateParticipantConfirmation,
   );
   const getGroupById = useGroupStore((state) => state.getGroupById);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
@@ -49,7 +54,60 @@ const WishDetail = () => {
   const { auth } = useAuth();
   const setUser = useAppStore((state) => state.setUser);
   const setGroups = useGroupStore((state) => state.setGroups);
+  const containerRef = useRef<HTMLParagraphElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [tooltip, setTooltip] = useState<TooltipState>(null);
 
+  const getAbsoluteOffset = (range: Range) => {
+    if (!containerRef.current) return { start: 0, end: 0 };
+
+    const walker = document.createTreeWalker(
+      containerRef.current,
+      NodeFilter.SHOW_TEXT,
+    );
+
+    let total = 0;
+    let start = 0;
+    let end = 0;
+
+    let node: Node | null = walker.nextNode();
+
+    while (node) {
+      if (node === range.startContainer) {
+        start = total + range.startOffset;
+      }
+      if (node === range.endContainer) {
+        end = total + range.endOffset;
+        break;
+      }
+
+      total += node.textContent?.length || 0;
+      node = walker.nextNode();
+    }
+
+    return { start, end };
+  };
+
+  const handleMouseUp = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    if (!containerRef.current?.contains(range.commonAncestorContainer)) return;
+
+    const rect = range.getBoundingClientRect();
+    const { start, end } = getAbsoluteOffset(range);
+    if (start === end) {
+      setTooltip(null);
+      return;
+    }
+    setTooltip({
+      x: rect.left + window.scrollX,
+      y: rect.top + window.scrollY - 40,
+      start,
+      end,
+    });
+  };
   if (!id) {
     return null;
   }
@@ -93,6 +151,21 @@ const WishDetail = () => {
       setIsLoading(false);
     })();
   }, []);
+  // 👇 描画後に高さを測って上に移動
+  useLayoutEffect(() => {
+    if (!tooltip || !tooltipRef.current) return;
+
+    const height = tooltipRef.current.offsetHeight;
+
+    setTooltip((prev) =>
+      prev
+        ? {
+            ...prev,
+            y: prev.y, // 8px余白
+          }
+        : null,
+    );
+  }, [tooltip?.start, tooltip?.end]);
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 pb-20">
@@ -115,14 +188,14 @@ const WishDetail = () => {
   const creator = group?.members.find((m) => m.id == wish.creatorId);
   const isCreator = currentUser?.id == wish.creatorId;
   const isParticipant = wish.participants.some(
-    (p) => p.userId == currentUser?.id
+    (p) => p.userId == currentUser?.id,
   );
   const isConfirmed = isWishConfirmed(wish);
   const isMaxParticipantsReached =
     wish.maxParticipants && wish.participants.length >= wish.maxParticipants;
   const canJoin = currentUser ? canUserJoin(wish, currentUser.id) : false;
   let currentParticipant = wish.participants.find(
-    (p) => p.userId == currentUser?.id
+    (p) => p.userId == currentUser?.id,
   );
   const hasPostAnswers =
     currentParticipant?.postAnswers &&
@@ -139,7 +212,7 @@ const WishDetail = () => {
     const eventSource: EventAttributes = {
       title: wish.title,
       location: wish.displayText,
-　　　　url: location.href,
+      url: location.href,
       start: [
         dayjs(wish.implementationDatetime).utc().year(),
         dayjs(wish.implementationDatetime).utc().month() + 1,
@@ -168,6 +241,38 @@ const WishDetail = () => {
     } else {
       await handleJoin({ datetime: "", note: "" });
     }
+  };
+  const getQuoteSentence = (startOffset: number, endOffset: number) => {
+    const segmenter = new Intl.Segmenter("ja", { granularity: "sentence" });
+    const sentences = [...segmenter.segment(wish.notes || "")].map(
+      (s) => s.segment,
+    );
+    const selectedIndexes = sentences.reduce<{
+      startIndex: number;
+      endIndex: number;
+      currentIndex: number;
+    }>(
+      (indexes, sentence, index) => {
+        if (indexes.endIndex !== -1) return indexes;
+        const sentenceEnd = indexes.currentIndex + [...sentence].length;
+        if (sentenceEnd >= startOffset && indexes.startIndex === -1) {
+          indexes.startIndex = index;
+        }
+        console.log({ sentence, sentenceEnd, startOffset, endOffset, indexes });
+        if (sentenceEnd > endOffset) {
+          indexes.endIndex = index;
+        }
+        indexes.currentIndex += [...sentence].length;
+        return indexes;
+      },
+      { startIndex: -1, endIndex: -1, currentIndex: 0 },
+    );
+    const { startIndex, endIndex } = selectedIndexes;
+    return (
+      (sentences[startIndex - 1] ?? "") +
+      sentences.slice(startIndex, endIndex + 1).join("") +
+      (sentences[endIndex + 1] ?? "")
+    );
   };
 
   const handleJoin = async (confirmData: Record<string, string>) => {
@@ -293,9 +398,50 @@ const WishDetail = () => {
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <h3 className="font-semibold text-gray-800 mb-2">備考</h3>
               <p
+                ref={containerRef}
+                onMouseUp={handleMouseUp}
                 className="text-gray-700 whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: linkifyText(wish.notes) }}
+                dangerouslySetInnerHTML={{
+                  __html: linkifyText(wish.notes),
+                }}
               />
+            </div>
+          )}
+
+          {tooltip && (
+            <div
+              ref={tooltipRef}
+              onClick={() => {
+                alert(
+                  "start:" +
+                    tooltip.start +
+                    "\n end:" +
+                    tooltip.end +
+                    "\n sentence:" +
+                    getQuoteSentence(tooltip.start, tooltip.end),
+                );
+                setTooltip(null);
+              }}
+              style={{
+                position: "absolute",
+                top: tooltip.y,
+                left: tooltip.x,
+                background: "black",
+                color: "white",
+                padding: "6px 10px",
+                borderRadius: "6px",
+                fontSize: "12px",
+                zIndex: 1000,
+              }}>
+              {/* <div>start: {tooltip.start}</div>
+              <div>end: {tooltip.end}</div>
+              <div
+                className="whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{
+                  __html: getQuoteSentence(tooltip.start, tooltip.end),
+                }}
+              /> */}
+              選択箇所を引用してコメントする
             </div>
           )}
 
@@ -310,7 +456,7 @@ const WishDetail = () => {
                 </div>
                 <div className="text-sm text-orange-600 mt-1">
                   {dayjs(
-                    dayjs(wish.deadline).utc().format("YYYY/MM/DD HH:mm")
+                    dayjs(wish.deadline).utc().format("YYYY/MM/DD HH:mm"),
                   ).fromNow()}
                 </div>
               </div>
@@ -343,7 +489,7 @@ const WishDetail = () => {
                 {wish.participants.map((participant, index) => {
                   console.log(participant);
                   const member = group?.members.find(
-                    (m) => m.id == participant.userId
+                    (m) => m.id == participant.userId,
                   );
                   const hasParticipationAnswers =
                     participant.participationAnswers &&
@@ -364,7 +510,7 @@ const WishDetail = () => {
                           </div>
                           <div className="text-xs text-gray-500">
                             {dayjs(participant.joinedAt).format(
-                              "YYYY/MM/DD HH:mm"
+                              "YYYY/MM/DD HH:mm",
                             )}
                           </div>
                         </div>
@@ -389,7 +535,7 @@ const WishDetail = () => {
                               "1900/1/1 0:00"
                                 ? "未回答"
                                 : dayjs(
-                                    participant.participationAnswers.datetime
+                                    participant.participationAnswers.datetime,
                                   ).format("YYYY/MM/DD HH:mm")}
                             </div>
                           )}
@@ -421,7 +567,7 @@ const WishDetail = () => {
                               "1900/1/1 0:00"
                                 ? "未回答"
                                 : dayjs(
-                                    participant.postAnswers.datetime
+                                    participant.postAnswers.datetime,
                                   ).format("YYYY/MM/DD HH:mm")}
                             </div>
                           )}
