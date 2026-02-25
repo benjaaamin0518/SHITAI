@@ -88,7 +88,7 @@ const WishDetail = () => {
     return { start, end };
   };
 
-  const handleMouseUp = () => {
+  const showTooltipFromSelection = () => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
 
@@ -107,6 +107,18 @@ const WishDetail = () => {
       start,
       end,
     });
+  };
+
+  // 👇 スマホで最重要
+  useEffect(() => {
+    document.addEventListener("selectionchange", showTooltipFromSelection);
+    return () =>
+      document.removeEventListener("selectionchange", showTooltipFromSelection);
+  }, []);
+
+  // 👇 PC / スマホ共通
+  const handlePointerUp = () => {
+    setTimeout(showTooltipFromSelection, 0);
   };
   if (!id) {
     return null;
@@ -399,7 +411,7 @@ const WishDetail = () => {
               <h3 className="font-semibold text-gray-800 mb-2">備考</h3>
               <p
                 ref={containerRef}
-                onMouseUp={handleMouseUp}
+                onPointerUp={handlePointerUp}
                 className="text-gray-700 whitespace-pre-wrap"
                 dangerouslySetInnerHTML={{
                   __html: linkifyText(wish.notes),
