@@ -57,7 +57,13 @@ const WishDetail = () => {
   const containerRef = useRef<HTMLParagraphElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<TooltipState>(null);
-
+  const highlightText = (text: string, start: number, end: number) => {
+    return linkifyText(
+      text.slice(0, start) +
+        `<span class="bg-blue-200">${text.slice(start, end)}</span>` +
+        text.slice(end),
+    );
+  };
   const getAbsoluteOffset = (range: Range) => {
     if (!containerRef.current) return { start: 0, end: 0 };
 
@@ -107,18 +113,21 @@ const WishDetail = () => {
       start,
       end,
     });
+    selection?.removeAllRanges();
   };
 
   // 👇 スマホで最重要
-  useEffect(() => {
-    document.addEventListener("selectionchange", showTooltipFromSelection);
-    return () =>
-      document.removeEventListener("selectionchange", showTooltipFromSelection);
-  }, []);
+  // useEffect(() => {
+  //   document.addEventListener("selectionchange", showTooltipFromSelection);
+
+  //   return () =>
+  //     document.removeEventListener("selectionchange", showTooltipFromSelection);
+  // }, []);
 
   // 👇 PC / スマホ共通
   const handlePointerUp = () => {
     setTimeout(showTooltipFromSelection, 0);
+    // window.getSelection()?.removeAllRanges();
   };
   if (!id) {
     return null;
@@ -166,8 +175,6 @@ const WishDetail = () => {
   // 👇 描画後に高さを測って上に移動
   useLayoutEffect(() => {
     if (!tooltip || !tooltipRef.current) return;
-
-    const height = tooltipRef.current.offsetHeight;
 
     setTooltip((prev) =>
       prev
@@ -414,7 +421,11 @@ const WishDetail = () => {
                 onPointerUp={handlePointerUp}
                 className="text-gray-700 whitespace-pre-wrap"
                 dangerouslySetInnerHTML={{
-                  __html: linkifyText(wish.notes),
+                  __html: highlightText(
+                    wish.notes,
+                    tooltip?.start || 0,
+                    tooltip?.end || 0,
+                  ),
                 }}
               />
             </div>
