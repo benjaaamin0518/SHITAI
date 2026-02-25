@@ -278,7 +278,7 @@ const WishDetail = () => {
           indexes.startIndex = index;
         }
         console.log({ sentence, sentenceEnd, startOffset, endOffset, indexes });
-        if (sentenceEnd >= endOffset) {
+        if (sentenceEnd + 1 >= endOffset) {
           indexes.endIndex = index;
         }
         indexes.currentIndex += sentence.length;
