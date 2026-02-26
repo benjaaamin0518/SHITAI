@@ -32,10 +32,17 @@ const CommentInputBottomSheet: React.FC<Props> = ({
   const selectionRef = useRef<{ start?: number; end?: number }>({});
   const [text, setText] = useState("");
   const [quote, setQuote] = useState<string | undefined>(undefined);
-  const [quoteAbsoluteStart, setQuoteAbsoluteStart] = useState<number | undefined>(undefined);
-  const [quoteAbsoluteEnd, setQuoteAbsoluteEnd] = useState<number | undefined>(undefined);
+  const [quoteAbsoluteStart, setQuoteAbsoluteStart] = useState<
+    number | undefined
+  >(undefined);
+  const [quoteAbsoluteEnd, setQuoteAbsoluteEnd] = useState<number | undefined>(
+    undefined,
+  );
   const [translateY, setTranslateY] = useState(0);
-  const dragging = useRef<{ active: boolean; startY: number }>({ active: false, startY: 0 });
+  const dragging = useRef<{ active: boolean; startY: number }>({
+    active: false,
+    startY: 0,
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -44,7 +51,10 @@ const CommentInputBottomSheet: React.FC<Props> = ({
       setQuoteAbsoluteEnd(initialQuote?.absoluteEnd);
       selectionRef.current.start = initialQuote?.absoluteStart;
       selectionRef.current.end = initialQuote?.absoluteEnd;
-      setTimeout(() => sheetRef.current?.querySelector("textarea")?.focus(), 50);
+      setTimeout(
+        () => sheetRef.current?.querySelector("textarea")?.focus(),
+        50,
+      );
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -118,7 +128,11 @@ const CommentInputBottomSheet: React.FC<Props> = ({
     };
   }, [onClose]);
 
-  const renderQuotedHTML = (rawQuote?: string, start?: number, end?: number) => {
+  const renderQuotedHTML = (
+    rawQuote?: string,
+    start?: number,
+    end?: number,
+  ) => {
     const raw = rawQuote || "";
     if (typeof start === "number" && typeof end === "number") {
       const relStart = start || 0;
@@ -128,43 +142,65 @@ const CommentInputBottomSheet: React.FC<Props> = ({
         const target = raw.slice(relStart, relEnd);
         const after = raw.slice(relEnd);
         return (
-          (linkifyText(before) + `<span class=\"bg-red-200\">${linkifyText(target)}</span>` + linkifyText(after)).replace(/\n/g, "<br/>")
-        );
+          linkifyText(before) +
+          `<span class=\"bg-red-200\">${linkifyText(target)}</span>` +
+          linkifyText(after)
+        ).replace(/\n/g, "<br/>");
       }
     }
     return linkifyText(raw.replace(/\n/g, "<br/>"));
   };
 
   return (
-    <div aria-hidden={!isOpen} className={`fixed inset-0 z-50 pointer-events-none ${isOpen ? "" : ""}`}>
-      <div onClick={onClose} className={`absolute inset-0 bg-black transition-opacity duration-200 ${isOpen ? "opacity-40 pointer-events-auto" : "opacity-0 pointer-events-none"}`} />
+    <div
+      aria-hidden={!isOpen}
+      className={`fixed inset-0 z-50 pointer-events-none ${isOpen ? "" : ""}`}>
+      <div
+        onClick={onClose}
+        className={`absolute inset-0 bg-black transition-opacity duration-200 ${isOpen ? "opacity-40 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+      />
 
       <div
         ref={sheetRef}
         className={`pointer-events-auto fixed left-0 right-0 bottom-0 bg-white rounded-t-xl shadow-xl transition-transform duration-200 flex flex-col ${isOpen ? "translate-y-0" : "translate-y-full"}`}
         style={{
           maxHeight: "70vh",
-          transform: isOpen ? `translateY(${translateY}px)` : "translateY(100%)",
-        }}
-      >
+          transform: isOpen
+            ? `translateY(${translateY}px)`
+            : "translateY(100%)",
+        }}>
         <div ref={handleRef} className="px-4 pt-3 pb-2 border-b touch-none">
           <div className="w-12 h-1.5 bg-gray-300 rounded mx-auto mb-2" />
           <div className="flex items-center justify-between">
             <div className="text-lg font-semibold">コメントを書く</div>
-            <button onClick={onClose} className="text-gray-600">閉じる</button>
+            <button onClick={onClose} className="text-gray-600">
+              閉じる
+            </button>
           </div>
         </div>
 
         <div className="px-4 py-3 overflow-auto flex-1">
           {quote && (
             <div className="mb-3 text-sm text-gray-700 bg-red-50 p-2 rounded max-h-40 overflow-auto">
-              <div className="font-semibold text-gray-800 mb-1">引用プレビュー</div>
+              <div className="font-semibold text-gray-800 mb-1">
+                引用プレビュー
+              </div>
               <div
                 className="whitespace-pre-wrap break-words text-sm"
-                dangerouslySetInnerHTML={{ __html: renderQuotedHTML(quote, quoteAbsoluteStart, quoteAbsoluteEnd) }}
+                dangerouslySetInnerHTML={{
+                  __html: renderQuotedHTML(
+                    quote,
+                    quoteAbsoluteStart,
+                    quoteAbsoluteEnd,
+                  ),
+                }}
               />
               <div className="text-right mt-2">
-                <button onClick={() => setQuote(undefined)} className="text-xs text-gray-500">クリア</button>
+                <button
+                  onClick={() => setQuote(undefined)}
+                  className="text-xs text-gray-500">
+                  クリア
+                </button>
               </div>
             </div>
           )}
@@ -182,7 +218,10 @@ const CommentInputBottomSheet: React.FC<Props> = ({
 
         <div className="px-4 pb-6 pt-2 border-t bg-white flex-shrink-0">
           <div className="flex items-center justify-end">
-            <button onClick={handleSubmit} className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-60" disabled={!text.trim()}>
+            <button
+              onClick={handleSubmit}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-60"
+              disabled={!text.trim()}>
               送信
             </button>
           </div>

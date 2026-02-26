@@ -182,9 +182,12 @@ const CommentBottomSheet: React.FC<Props> = ({
                       />
                     </blockquote>
                   )}
-                  <div className="text-gray-800 whitespace-pre-wrap">
-                    {c.text}
-                  </div>
+                  <div
+                    className="text-gray-800 whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{
+                      __html: linkifyText(c.text),
+                    }}
+                  />
                 </div>
               ))}
             </div>
@@ -197,8 +200,7 @@ const CommentBottomSheet: React.FC<Props> = ({
           <div className="flex items-center justify-center">
             <button
               onClick={() => onOpenInput && onOpenInput()}
-              className="w-full text-left rounded-xl border border-gray-200 p-3 text-sm bg-white hover:bg-gray-50"
-            >
+              className="w-full text-left rounded-xl border border-gray-200 p-3 text-sm bg-white hover:bg-gray-50">
               <div className="text-sm text-gray-500">コメントを書く...</div>
             </button>
           </div>
