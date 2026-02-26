@@ -235,3 +235,42 @@ export type joinWishResponse =
     }
   | { error: string; status: number };
 export type joinWishApiResponse = Response<joinWishResponse>;
+
+// Comments API
+export interface Comment {
+  id: string;
+  wishId?: string;
+  userId: string;
+  userName: string;
+  text: string;
+  quote?: string;
+  createdAt: string;
+  quoteAbsoluteStart?: number;
+  quoteAbsoluteEnd?: number;
+}
+
+export type getCommentsRequest = accessTokenAuthRequest & { wishId: string };
+export type getCommentsApiRequest = Request<getCommentsRequest>;
+export type getCommentsResponse =
+  | {
+      result: { comments: Comment[] };
+      status: number;
+    }
+  | { error: string; status: number };
+export type getCommentsApiResponse = Response<getCommentsResponse>;
+
+export type postCommentRequest = accessTokenAuthRequest & {
+  wishId: string;
+  text: string;
+  quote?: string;
+  quoteAbsoluteStart?: number;
+  quoteAbsoluteEnd?: number;
+};
+export type postCommentApiRequest = Request<postCommentRequest>;
+export type postCommentResponse =
+  | {
+      result: { comment: Comment };
+      status: number;
+    }
+  | { error: string; status: number };
+export type postCommentApiResponse = Response<postCommentResponse>;

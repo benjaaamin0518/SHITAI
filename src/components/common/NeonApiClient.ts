@@ -20,6 +20,11 @@ import {
   invitationGroupResponse,
   joinWishRequest,
   joinWishResponse,
+  getCommentsRequest,
+  getCommentsResponse,
+  postCommentRequest,
+  postCommentResponse,
+  Comment as ApiComment,
   loginAuthRequest,
   loginAuthResponse,
   refreshTokenAuthRequest,
@@ -65,7 +70,7 @@ class NeonClientApi {
         data: param,
       };
       await axios<any, AxiosResponse<loginAuthResponse>, loginAuthRequest>(
-        options
+        options,
       )
         .then((res) => {
           statusCode = res.data.status;
@@ -222,7 +227,7 @@ class NeonClientApi {
           data: param,
         };
         await axios<any, AxiosResponse<insertWishResponse>, insertWishRequest>(
-          options
+          options,
         )
           .then((res) => {
             statusCode = res.data.status;
@@ -366,7 +371,7 @@ class NeonClientApi {
           data: param,
         };
         await axios<any, AxiosResponse<updateWishResponse>, updateWishRequest>(
-          options
+          options,
         )
           .then((res) => {
             statusCode = res.data.status;
@@ -407,7 +412,7 @@ class NeonClientApi {
           data: param,
         };
         await axios<any, AxiosResponse<getWishesResponse>, getWishesRequest>(
-          options
+          options,
         )
           .then((res) => {
             statusCode = res.data.status;
@@ -449,7 +454,7 @@ class NeonClientApi {
           data: param,
         };
         await axios<any, AxiosResponse<getGroupsResponse>, getGroupsRequest>(
-          options
+          options,
         )
           .then((res) => {
             statusCode = res.data.status;
@@ -576,7 +581,7 @@ class NeonClientApi {
           data: param,
         };
         await axios<any, AxiosResponse<joinWishResponse>, joinWishRequest>(
-          options
+          options,
         )
           .then((res) => {
             statusCode = res.data.status;
@@ -602,6 +607,93 @@ class NeonClientApi {
       console.error(e);
     } finally {
       return { statusCode };
+    }
+  }
+  public async getComments(param: getCommentsRequest) {
+    let statusCode = 200;
+    let message = "";
+    let comments: ApiComment[] = [];
+    try {
+      let isExec = true;
+      while (isExec) {
+        let options: AxiosRequestConfig<getCommentsRequest> = {
+          url: `${this._backendApiUrl}/api/v1/get/comments`,
+          method: "POST",
+          data: param,
+        };
+        await axios<
+          any,
+          AxiosResponse<getCommentsResponse>,
+          getCommentsRequest
+        >(options)
+          .then((res) => {
+            statusCode = res.data.status;
+            if ("result" in res.data) {
+              comments = res.data.result.comments;
+              isExec = false;
+            }
+          })
+          .catch(async (error) => {
+            statusCode = error?.response?.data?.status || 500;
+            message = error?.response?.data?.error || "";
+            console.log(error);
+            const obj = await this.wrapRefreshTokenAuth(message, statusCode);
+            statusCode = obj.statusCode;
+            isExec = obj.isExec;
+            if (isExec) {
+              param.userInfo.accessToken = obj.accessToken;
+              options.data = param;
+            }
+          });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return { statusCode, comments };
+    }
+  }
+
+  public async postComment(param: postCommentRequest) {
+    let statusCode = 200;
+    let message = "";
+    let comment: ApiComment | null = null;
+    try {
+      let isExec = true;
+      while (isExec) {
+        let options: AxiosRequestConfig<postCommentRequest> = {
+          url: `${this._backendApiUrl}/api/v1/post/comment`,
+          method: "POST",
+          data: param,
+        };
+        await axios<
+          any,
+          AxiosResponse<postCommentResponse>,
+          postCommentRequest
+        >(options)
+          .then((res) => {
+            statusCode = res.data.status;
+            if ("result" in res.data) {
+              comment = res.data.result.comment;
+              isExec = false;
+            }
+          })
+          .catch(async (error) => {
+            statusCode = error?.response?.data?.status || 500;
+            message = error?.response?.data?.error || "";
+            console.log(error);
+            const obj = await this.wrapRefreshTokenAuth(message, statusCode);
+            statusCode = obj.statusCode;
+            isExec = obj.isExec;
+            if (isExec) {
+              param.userInfo.accessToken = obj.accessToken;
+              options.data = param;
+            }
+          });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return { statusCode, comment };
     }
   }
 }

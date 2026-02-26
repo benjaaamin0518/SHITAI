@@ -15,8 +15,6 @@ type Props = {
     quote?: string;
     quoteAbsoluteStart?: number;
     quoteAbsoluteEnd?: number;
-    highlightStart?: number | undefined;
-    highlightEnd?: number | undefined;
   }) => void;
   initialQuote?: InitialQuote;
 };
@@ -80,8 +78,6 @@ const CommentInputBottomSheet: React.FC<Props> = ({
       quote,
       quoteAbsoluteStart,
       quoteAbsoluteEnd,
-      highlightStart: selectionRef.current.start,
-      highlightEnd: selectionRef.current.end,
     });
     setText("");
     setQuote(undefined);

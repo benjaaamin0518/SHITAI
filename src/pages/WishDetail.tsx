@@ -23,6 +23,7 @@ import { linkifyText } from "../utils/linkify";
 import Loading from "../components/common/Loading";
 import CommentBottomSheet from "../components/common/CommentBottomSheet";
 import CommentInputBottomSheet from "../components/common/CommentInputBottomSheet";
+import { NeonClientApi } from "../components/common/NeonApiClient";
 import { formatDisplayDate } from "../utils/date";
 import { useAuth, auth as accessTokenAuth } from "../store/useAuth";
 type TooltipState = {
@@ -71,8 +72,6 @@ const WishDetail = () => {
       createdAt: string;
       quoteAbsoluteStart?: number;
       quoteAbsoluteEnd?: number;
-      highlightStart?: number;
-      highlightEnd?: number;
     }[]
   >([]);
   const [selectedQuote, setSelectedQuote] = useState<{
@@ -192,6 +191,20 @@ const WishDetail = () => {
       }
       setWishes(await getWishByIdCall(id));
       setWish(getWishById(id));
+      // fetch comments from backend
+      try {
+        const client = new NeonClientApi();
+        const accessToken = localStorage.getItem("shitai-accessToken") || "";
+        const res = await client.getComments({
+          wishId: id,
+          userInfo: { accessToken },
+        });
+        if (res.statusCode === 200) {
+          setComments(res.comments || []);
+        }
+      } catch (e) {
+        console.error("failed to load comments", e);
+      }
       setIsLoading(false);
     })();
   }, []);
@@ -740,17 +753,57 @@ const WishDetail = () => {
         }}
         initialQuote={selectedQuote}
         onSubmit={(c) => {
-          const newComment = {
-            id: Date.now().toString(),
-            userId: currentUser?.id || "",
-            userName: currentUser?.name || "匿名",
-            text: c.text,
-            quote: c.quote,
-            createdAt: new Date().toISOString(),
-            quoteAbsoluteStart: c.quoteAbsoluteStart,
-            quoteAbsoluteEnd: c.quoteAbsoluteEnd,
-          };
-          setComments((prev) => [newComment, ...prev]);
+          (async () => {
+            try {
+              const client = new NeonClientApi();
+              const accessToken =
+                localStorage.getItem("shitai-accessToken") || "";
+              const res = await client.postComment({
+                wishId: id,
+                text: c.text,
+                quote: c.quote,
+                quoteAbsoluteStart: c.quoteAbsoluteStart,
+                quoteAbsoluteEnd: c.quoteAbsoluteEnd,
+                userInfo: { accessToken },
+              });
+              if (res.statusCode === 200 && res.comment) {
+                const res = await client.getComments({
+                  wishId: id,
+                  userInfo: { accessToken },
+                });
+                if (res.statusCode === 200) {
+                  setComments(res.comments || []);
+                }
+              } else {
+                // fallback to local-only comment
+                const newComment = {
+                  id: Date.now().toString(),
+                  userId: currentUser?.id || "",
+                  userName: currentUser?.name + "(投稿に失敗しました)",
+                  text: c.text,
+                  quote: c.quote,
+                  createdAt: new Date().toISOString(),
+                  quoteAbsoluteStart: c.quoteAbsoluteStart,
+                  quoteAbsoluteEnd: c.quoteAbsoluteEnd,
+                };
+                setComments((prev) => [newComment, ...prev]);
+              }
+            } catch (e) {
+              console.error("postComment failed", e);
+              const newComment = {
+                id: Date.now().toString(),
+                userId: currentUser?.id || "",
+                userName:
+                  (currentUser?.name || "匿名") + "(投稿に失敗しました)",
+                text: c.text,
+                quote: c.quote,
+                createdAt: new Date().toISOString(),
+                quoteAbsoluteStart: c.quoteAbsoluteStart,
+                quoteAbsoluteEnd: c.quoteAbsoluteEnd,
+              };
+              setComments((prev) => [newComment, ...prev]);
+            }
+          })();
         }}
       />
 
