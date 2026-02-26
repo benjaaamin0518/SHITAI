@@ -21,6 +21,8 @@ import dayjs from "dayjs";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { linkifyText } from "../utils/linkify";
 import Loading from "../components/common/Loading";
+import CommentBottomSheet from "../components/common/CommentBottomSheet";
+import CommentInputBottomSheet from "../components/common/CommentInputBottomSheet";
 import { formatDisplayDate } from "../utils/date";
 import { useAuth, auth as accessTokenAuth } from "../store/useAuth";
 type TooltipState = {
@@ -57,11 +59,32 @@ const WishDetail = () => {
   const containerRef = useRef<HTMLParagraphElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<TooltipState>(null);
+  const [showCommentsSheet, setShowCommentsSheet] = useState(false);
+  const [showCommentInputSheet, setShowCommentInputSheet] = useState(false);
+  const [comments, setComments] = useState<
+    {
+      id: string;
+      userId: string;
+      userName: string;
+      text: string;
+      quote?: string;
+      createdAt: string;
+      quoteAbsoluteStart?: number;
+      quoteAbsoluteEnd?: number;
+      highlightStart?: number;
+      highlightEnd?: number;
+    }[]
+  >([]);
+  const [selectedQuote, setSelectedQuote] = useState<{
+    text: string;
+    absoluteStart: number;
+    absoluteEnd: number;
+  } | null>(null);
   const highlightText = (text: string, start: number, end: number) => {
-    return linkifyText(
-      text.slice(0, start) +
-        `<span class="bg-blue-200">${text.slice(start, end)}</span>` +
-        text.slice(end),
+    return (
+      linkifyText(text.slice(0, start)) +
+      `<span class="bg-red-200">${linkifyText(text.slice(start, end))}</span>` +
+      linkifyText(text.slice(end))
     );
   };
   const getAbsoluteOffset = (range: Range) => {
@@ -266,6 +289,8 @@ const WishDetail = () => {
     const sentences = [...segmenter.segment(wish.notes || "")].map(
       (s) => s.segment,
     );
+    let quoteAbsoluteStart = 0;
+    let quoteAbsoluteEnd = 0;
     const selectedIndexes = sentences.reduce<{
       startIndex: number;
       endIndex: number;
@@ -276,6 +301,7 @@ const WishDetail = () => {
         const sentenceEnd = indexes.currentIndex + sentence.length - 1;
         if (sentenceEnd >= startOffset && indexes.startIndex === -1) {
           indexes.startIndex = index;
+          quoteAbsoluteStart = startOffset - indexes.currentIndex;
         }
         console.log({ sentence, sentenceEnd, startOffset, endOffset, indexes });
         if (sentenceEnd + 1 >= endOffset) {
@@ -287,11 +313,18 @@ const WishDetail = () => {
       { startIndex: -1, endIndex: -1, currentIndex: 0 },
     );
     const { startIndex, endIndex } = selectedIndexes;
-    return (
-      (sentences[startIndex - 1] ?? "") +
-      sentences.slice(startIndex, endIndex + 1).join("") +
-      (sentences[endIndex + 1] ?? "")
-    );
+    quoteAbsoluteStart =
+      (sentences[startIndex - 1] ?? "").length + quoteAbsoluteStart;
+    quoteAbsoluteEnd = quoteAbsoluteStart + (endOffset - startOffset);
+
+    return {
+      text:
+        (sentences[startIndex - 1] ?? "") +
+        sentences.slice(startIndex, endIndex + 1).join("") +
+        (sentences[endIndex + 1] ?? ""),
+      quoteAbsoluteStart,
+      quoteAbsoluteEnd,
+    };
   };
 
   const handleJoin = async (confirmData: Record<string, string>) => {
@@ -435,35 +468,30 @@ const WishDetail = () => {
             <div
               ref={tooltipRef}
               onClick={() => {
-                alert(
-                  "start:" +
-                    tooltip.start +
-                    "\n end:" +
-                    tooltip.end +
-                    "\n sentence:" +
-                    getQuoteSentence(tooltip.start, tooltip.end),
+                const sentenceObj = getQuoteSentence(
+                  tooltip.start,
+                  tooltip.end,
                 );
+                setSelectedQuote({
+                  text: sentenceObj.text,
+                  absoluteStart: sentenceObj.quoteAbsoluteStart,
+                  absoluteEnd: sentenceObj.quoteAbsoluteEnd,
+                });
                 setTooltip(null);
+                // Open the input sheet directly when user clicks the tooltip
+                setShowCommentInputSheet(true);
               }}
               style={{
                 position: "absolute",
                 top: tooltip.y,
                 left: tooltip.x,
-                background: "black",
+                background: "#dc2626", // red-600
                 color: "white",
                 padding: "6px 10px",
                 borderRadius: "6px",
                 fontSize: "12px",
                 zIndex: 1000,
               }}>
-              {/* <div>start: {tooltip.start}</div>
-              <div>end: {tooltip.end}</div>
-              <div
-                className="whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{
-                  __html: getQuoteSentence(tooltip.start, tooltip.end),
-                }}
-              /> */}
               選択箇所を引用してコメントする
             </div>
           )}
@@ -688,6 +716,51 @@ const WishDetail = () => {
           </div>
         </div>
       )}
+
+      {/* コメント用ボトムシート */}
+      <CommentBottomSheet
+        isOpen={showCommentsSheet}
+        onClose={() => {
+          setShowCommentsSheet(false);
+          setSelectedQuote(null);
+        }}
+        comments={comments}
+        onOpenInput={() => {
+          // open input sheet and close viewer
+          setShowCommentsSheet(false);
+          setShowCommentInputSheet(true);
+        }}
+      />
+
+      <CommentInputBottomSheet
+        isOpen={showCommentInputSheet}
+        onClose={() => {
+          setShowCommentInputSheet(false);
+          setSelectedQuote(null);
+        }}
+        initialQuote={selectedQuote}
+        onSubmit={(c) => {
+          const newComment = {
+            id: Date.now().toString(),
+            userId: currentUser?.id || "",
+            userName: currentUser?.name || "匿名",
+            text: c.text,
+            quote: c.quote,
+            createdAt: new Date().toISOString(),
+            quoteAbsoluteStart: c.quoteAbsoluteStart,
+            quoteAbsoluteEnd: c.quoteAbsoluteEnd,
+          };
+          setComments((prev) => [newComment, ...prev]);
+        }}
+      />
+
+      {/* コメントトリガー (右下) */}
+      <button
+        onClick={() => setShowCommentsSheet(true)}
+        className={`${showCommentsSheet || showCommentInputSheet ? "hidden" : ""} fixed right-6 bottom-24 z-50 bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition-colors`}
+        title="コメント">
+        <FileText size={20} />
+      </button>
     </div>
   );
 };
